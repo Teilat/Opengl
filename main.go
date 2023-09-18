@@ -42,20 +42,20 @@ var (
 		0, 1, 2,
 		0, 3, 2,
 		// back
-		4, 5, 6,
-		4, 7, 6,
-		//bottom
-		0, 1, 4,
-		0, 5, 4,
-		// top
-		2, 6, 3,
-		2, 7, 3,
-		// right
-		1, 5, 2,
-		1, 6, 2,
-		// left
-		0, 4, 3,
-		0, 7, 3,
+		//4, 5, 6,
+		//4, 7, 6,
+		////bottom
+		//0, 1, 4,
+		//0, 5, 4,
+		//// top
+		//2, 6, 3,
+		//2, 7, 3,
+		//// right
+		//1, 5, 2,
+		//1, 6, 2,
+		//// left
+		//0, 4, 3,
+		//0, 7, 3,
 	}
 	squareColors = []float32{
 		1, 0, 1, // 0
@@ -84,7 +84,7 @@ func main() {
 	//gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
 	window.SetKeyCallback(key_manager.KeyCallBack)
 
-	bindTexture()
+	texture := bindTexture()
 
 	for !window.ShouldClose() {
 		t := time.Now()
@@ -97,13 +97,13 @@ func main() {
 			updColor(program)
 		}
 
-		draw(vao, window, program)
+		draw(vao, texture, window, program)
 		time.Sleep(time.Second/time.Duration(fps) - time.Since(t))
 	}
 	gl.DeleteProgram(program)
 }
 
-func bindTexture() {
+func bindTexture() uint32 {
 	var texture uint32
 	gl.GenTextures(1, &texture)
 	gl.BindTexture(gl.TEXTURE_2D, texture)
@@ -113,9 +113,10 @@ func bindTexture() {
 	if err != nil {
 		fmt.Println(err)
 	}
-	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGB, width, height, 0, gl.RGB, gl.UNSIGNED_BYTE, gl.Ptr(img))
+	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGB, width, height, 0, gl.RGB8, gl.BYTE, gl.Ptr(img))
 	gl.GenerateTextureMipmap(gl.TEXTURE_2D)
 	gl.BindTexture(gl.TEXTURE_2D, 0)
+	return texture
 }
 
 func getImageFromFilePath(filePath string) ([]byte, error) {
@@ -146,10 +147,11 @@ func updColor(program uint32) {
 	gl.Uniform4f(vertexColorLocation, float32(redValue), float32(greenValue), float32(blueValue), 1.0)
 }
 
-func draw(vao uint32, window *glfw.Window, program uint32) {
+func draw(vao, texture uint32, window *glfw.Window, program uint32) {
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 	gl.UseProgram(program)
 
+	gl.BindTexture(gl.TEXTURE_2D, texture)
 	gl.BindVertexArray(vao)
 	gl.DrawElements(gl.TRIANGLES, int32(len(squareIndices)), gl.UNSIGNED_INT, nil)
 
