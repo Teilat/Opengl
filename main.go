@@ -58,9 +58,9 @@ var (
 		//0, 7, 3,
 	}
 	squareColors = []float32{
-		1, 0, 1, // 0
+		1, 0, 0, // 0
 		0, 1, 0, // 1
-		1, 0, 1, // 2
+		0, 0, 1, // 2
 		1, 1, 1, // 3
 	}
 	texture = []float32{
@@ -113,8 +113,9 @@ func bindTexture() uint32 {
 	if err != nil {
 		fmt.Println(err)
 	}
-	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGB, width, height, 0, gl.RGB8, gl.BYTE, gl.Ptr(img))
-	gl.GenerateTextureMipmap(gl.TEXTURE_2D)
+	fmt.Println(len(img))
+	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGB, width, height, 0, gl.RGB8, gl.UNSIGNED_BYTE, gl.Ptr(img))
+	gl.GenerateMipmap(gl.TEXTURE_2D)
 	gl.BindTexture(gl.TEXTURE_2D, 0)
 	return texture
 }
