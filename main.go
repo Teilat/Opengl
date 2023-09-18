@@ -76,7 +76,6 @@ func main() {
 	program := initOpenGL()
 
 	vao := cell.MakeVAO(square, squareColors, squareIndices)
-	//vao := cell.MakeVertexArrayObject(square, squareColors, squareIndices)
 
 	gl.UseProgram(program)
 	//gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
@@ -105,7 +104,7 @@ func updColor(program uint32) {
 	redValue := math.Abs(math.Cos(t))
 	greenValue := math.Abs(math.Cos(t + 1))
 	blueValue := math.Abs(math.Cos(t + 2))
-	fmt.Printf("%.2f %.2f %.2f\n", redValue, greenValue, blueValue)
+	// fmt.Printf("%.2f %.2f %.2f\n", redValue, greenValue, blueValue)
 	vertexColorLocation := gl.GetUniformLocation(program, gl.Str("ourColor\x00"))
 	gl.Uniform4f(vertexColorLocation, float32(redValue), float32(greenValue), float32(blueValue), 1.0)
 }
