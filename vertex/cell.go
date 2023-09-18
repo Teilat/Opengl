@@ -1,4 +1,4 @@
-package cell
+package vertex
 
 import (
 	"github.com/go-gl/gl/v4.6-core/gl"
@@ -7,7 +7,7 @@ import (
 
 // MakeVAO initializes and returns a vertex array from the points provided.
 // Этот метод по другому формирует объект с данными
-func MakeVAO(points, colors []float32, indices []uint32) uint32 {
+func MakeVAO(points, colors, texture []float32, indices []uint32) uint32 {
 	var vertexArrayObject, vertexBufferObject, indexBufferObject uint32
 	gl.GenVertexArrays(1, &vertexArrayObject)
 	gl.GenBuffers(1, &vertexBufferObject)
@@ -17,18 +17,21 @@ func MakeVAO(points, colors []float32, indices []uint32) uint32 {
 
 	// объеденяем все данные в виде (точки точки точки ... цвета цвета цвета ...)
 	vertices := append(points, colors...)
+	vertices = append(vertices, texture...)
 
 	// привязываем буфер к массиву вертексов
 	gl.BindBuffer(gl.ARRAY_BUFFER, vertexBufferObject)
 	// сохраняем дангые в созданый буффер с определенным размером в битах
-	// size = len(points) * size of data type | len(points)*int(unsafe.Sizeof(uint32(0)))
 	gl.BufferData(gl.ARRAY_BUFFER, len(vertices)*int(unsafe.Sizeof(float32(0))), gl.Ptr(vertices), gl.STATIC_DRAW)
 	// создаем указатель для использования данных в шейдере
 	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 0, nil)
 	gl.EnableVertexAttribArray(0)
-
+	// создаем указатель, но уже с офсетом в битах
 	gl.VertexAttribPointerWithOffset(1, 3, gl.FLOAT, false, 0, uintptr(len(points)*int(unsafe.Sizeof(float32(0)))))
 	gl.EnableVertexAttribArray(1)
+
+	gl.VertexAttribPointerWithOffset(2, 2, gl.FLOAT, false, 0, uintptr((len(points)+len(colors))*int(unsafe.Sizeof(float32(0)))))
+	gl.EnableVertexAttribArray(2)
 
 	// создаем буфер индексов к массиву вертексов
 	// тк это именно буфер индексов, делать указатель для шейдера ему не нужно

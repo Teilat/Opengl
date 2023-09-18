@@ -1,4 +1,4 @@
-package key
+package key_manager
 
 import (
 	"github.com/go-gl/glfw/v3.3/glfw"

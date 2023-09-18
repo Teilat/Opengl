@@ -2,14 +2,17 @@ package main
 
 import (
 	"C"
+	"bytes"
 	"fmt"
 	"github.com/go-gl/gl/v4.6-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
+	"image/png"
 	"log"
 	"math"
-	"opengl/cell"
-	"opengl/key"
+	"opengl/key_manager"
 	"opengl/shader"
+	"opengl/vertex"
+	"os"
 	"runtime"
 	"time"
 )
@@ -18,7 +21,7 @@ const (
 	width  = 800
 	height = 600
 
-	fps = 30
+	fps = 75
 )
 
 var (
@@ -39,20 +42,20 @@ var (
 		0, 1, 2,
 		0, 3, 2,
 		// back
-		//4, 5, 6,
-		//4, 7, 6,
-		// bottom
-		//0, 1, 4,
-		//0, 5, 4,
-		//// top
-		//2, 6, 3,
-		//2, 7, 3,
-		//// right
-		//1, 5, 2,
-		//1, 6, 2,
-		//// left
-		//0, 4, 3,
-		//0, 7, 3,
+		4, 5, 6,
+		4, 7, 6,
+		//bottom
+		0, 1, 4,
+		0, 5, 4,
+		// top
+		2, 6, 3,
+		2, 7, 3,
+		// right
+		1, 5, 2,
+		1, 6, 2,
+		// left
+		0, 4, 3,
+		0, 7, 3,
 	}
 	squareColors = []float32{
 		1, 0, 1, // 0
@@ -75,11 +78,13 @@ func main() {
 	defer glfw.Terminate()
 	program := initOpenGL()
 
-	vao := cell.MakeVAO(square, squareColors, squareIndices)
+	vao := vertex.MakeVAO(square, squareColors, texture, squareIndices)
 
 	gl.UseProgram(program)
 	//gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
-	window.SetKeyCallback(key.KeyCallBack)
+	window.SetKeyCallback(key_manager.KeyCallBack)
+
+	bindTexture()
 
 	for !window.ShouldClose() {
 		t := time.Now()
@@ -88,7 +93,7 @@ func main() {
 
 		gl.Clear(gl.COLOR_BUFFER_BIT)
 
-		if key.UpdateColor {
+		if key_manager.UpdateColor {
 			updColor(program)
 		}
 
@@ -96,6 +101,38 @@ func main() {
 		time.Sleep(time.Second/time.Duration(fps) - time.Since(t))
 	}
 	gl.DeleteProgram(program)
+}
+
+func bindTexture() {
+	var texture uint32
+	gl.GenTextures(1, &texture)
+	gl.BindTexture(gl.TEXTURE_2D, texture)
+
+	var width, height int32
+	img, err := getImageFromFilePath("./square.png")
+	if err != nil {
+		fmt.Println(err)
+	}
+	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGB, width, height, 0, gl.RGB, gl.UNSIGNED_BYTE, gl.Ptr(img))
+	gl.GenerateTextureMipmap(gl.TEXTURE_2D)
+	gl.BindTexture(gl.TEXTURE_2D, 0)
+}
+
+func getImageFromFilePath(filePath string) ([]byte, error) {
+	buf := new(bytes.Buffer)
+
+	f, err := os.Open(filePath)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	img, err := png.Decode(f)
+	err = png.Encode(buf, img)
+	if err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), err
 }
 
 func updColor(program uint32) {
