@@ -18,7 +18,7 @@ const (
 	width  = 800
 	height = 600
 
-	fps = 60
+	fps = 30
 )
 
 var (
@@ -39,26 +39,32 @@ var (
 		0, 1, 2,
 		0, 3, 2,
 		// back
-		4, 5, 6,
-		5, 7, 6,
+		//4, 5, 6,
+		//4, 7, 6,
 		// bottom
-		0, 1, 4,
-		0, 5, 4,
-		// top
-		2, 6, 3,
-		2, 7, 3,
-		// right
-		1, 5, 2,
-		1, 6, 2,
-		// left
-		0, 4, 3,
-		0, 7, 3,
+		//0, 1, 4,
+		//0, 5, 4,
+		//// top
+		//2, 6, 3,
+		//2, 7, 3,
+		//// right
+		//1, 5, 2,
+		//1, 6, 2,
+		//// left
+		//0, 4, 3,
+		//0, 7, 3,
 	}
 	squareColors = []float32{
-		1, 0, 0, // 0
+		1, 0, 1, // 0
 		0, 1, 0, // 1
-		0, 0, 1, // 2
+		1, 0, 1, // 2
 		1, 1, 1, // 3
+	}
+	texture = []float32{
+		0, 0, // 0
+		1, 0, // 1
+		1, 1, // 2
+		0, 1, // 3
 	}
 )
 
@@ -69,10 +75,11 @@ func main() {
 	defer glfw.Terminate()
 	program := initOpenGL()
 
-	vao := cell.MakeVertexArrayObject(square, squareColors, squareIndices)
+	vao := cell.MakeVAO(square, squareColors, squareIndices)
+	//vao := cell.MakeVertexArrayObject(square, squareColors, squareIndices)
 
 	gl.UseProgram(program)
-	// gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
+	//gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
 	window.SetKeyCallback(key.KeyCallBack)
 
 	for !window.ShouldClose() {
@@ -87,7 +94,6 @@ func main() {
 		}
 
 		draw(vao, window, program)
-
 		time.Sleep(time.Second/time.Duration(fps) - time.Since(t))
 	}
 	gl.DeleteProgram(program)
