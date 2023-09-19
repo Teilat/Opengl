@@ -10,5 +10,6 @@ out vec4 color;
 void main() {
     //color = ourColor;
     //color = vec4(verColor,1);
-    color = texture(ourTexture,texturePos);
+    //color = texture(ourTexture,texturePos);
+    color = mix(texture(ourTexture,texturePos), ourColor,0.2);
 }
