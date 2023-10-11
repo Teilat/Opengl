@@ -147,7 +147,7 @@ func KeyCallBack(window *glfw.Window, key glfw.Key, _ int, action glfw.Action, _
 		window.SetShouldClose(true)
 	}
 	keys[key] = keyAttr{action == 0, action == 1, action == 2}
-	fmt.Printf("%s:%+v\n", time.Now().Format("04:05.000"), keys[key])
+	fmt.Printf("%s:\"%s\"%+v\n", time.Now().Format("04:05.000"), string(rune(key)), keys[key])
 }
 
 func GetKey(key glfw.Key) bool {
