@@ -1,15 +1,11 @@
 #version 410
 
 in vec2 texturePos;
-in vec3 verColor;
 
 uniform vec4 ourColor;
-uniform sampler2D ourTexture;
+uniform sampler2D tex;
 
 out vec4 color;
 void main() {
-    //color = ourColor;
-    //color = vec4(verColor,1);
-    //color = texture(ourTexture,texturePos);
-    color = mix(texture(ourTexture,texturePos), ourColor,0.2);
+    color = mix(texture(tex,texturePos), ourColor,0.2);
 }

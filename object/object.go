@@ -38,8 +38,6 @@ func makeVAO(vertices []float32, indices []uint32) uint32 {
 
 	gl.BindVertexArray(vertexArrayObject)
 
-	// объеденяем все данные в виде (точки точки точки ... цвета цвета цвета ...)
-
 	// привязываем буфер к массиву вертексов
 	gl.BindBuffer(gl.ARRAY_BUFFER, vertexBufferObject)
 	// сохраняем дангые в созданый буффер с определенным размером в битах

@@ -3,15 +3,18 @@ package main
 import (
 	"C"
 	"fmt"
-	"github.com/go-gl/gl/v4.6-core/gl"
-	"github.com/go-gl/glfw/v3.3/glfw"
+	"github.com/go-gl/mathgl/mgl32"
 	"log"
 	"math"
-	"opengl/key_manager"
-	"opengl/object"
-	"opengl/shader"
+	"opengl/input"
 	"runtime"
 	"time"
+
+	"opengl/object"
+	"opengl/shader"
+
+	"github.com/go-gl/gl/v4.6-core/gl"
+	"github.com/go-gl/glfw/v3.3/glfw"
 )
 
 const (
@@ -20,6 +23,8 @@ const (
 
 	fps = 75
 )
+
+var updColor = false
 
 var (
 	square = []float32{
@@ -95,9 +100,25 @@ func main() {
 
 	gl.UseProgram(program)
 	//gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
-	window.SetKeyCallback(key_manager.KeyCallBack)
+	window.SetKeyCallback(input.KeyCallBack)
 
 	obj := object.NewObject(square, squareIndices)
+
+	projection := mgl32.Perspective(mgl32.DegToRad(40.0), float32(width)/height, 0.1, 10.0)
+	projectionUniform := gl.GetUniformLocation(program, gl.Str("projection\x00"))
+	gl.UniformMatrix4fv(projectionUniform, 1, false, &projection[0])
+
+	camera := mgl32.LookAtV(mgl32.Vec3{3, 2, 3}, mgl32.Vec3{0, 0, 0}, mgl32.Vec3{0, 1, 0})
+	cameraUniform := gl.GetUniformLocation(program, gl.Str("camera\x00"))
+	gl.UniformMatrix4fv(cameraUniform, 1, false, &camera[0])
+
+	model := mgl32.Ident4()
+	modelUniform := gl.GetUniformLocation(program, gl.Str("model\x00"))
+	gl.UniformMatrix4fv(modelUniform, 1, false, &model[0])
+
+	gl.ActiveTexture(gl.TEXTURE0)
+	gl.BindTexture(gl.TEXTURE_2D, obj.Texture)
+	gl.Uniform1i(gl.GetUniformLocation(program, gl.Str("tex\x00")), 0)
 
 	for !window.ShouldClose() {
 		t := time.Now()
@@ -106,12 +127,12 @@ func main() {
 
 		gl.Clear(gl.COLOR_BUFFER_BIT)
 
-		if key_manager.UpdateColor {
-			updColor(program)
+		if input.GetKeyDown(glfw.KeySpace) {
+			updColor = !updColor
 		}
-		gl.ActiveTexture(gl.TEXTURE0)
-		gl.BindTexture(gl.TEXTURE_2D, obj.Texture)
-		gl.Uniform1i(gl.GetUniformLocation(program, gl.Str("ourTexture\x00")), 0)
+		if updColor {
+			upd(program)
+		}
 
 		draw(obj.Vao, obj.Texture, window, program)
 		time.Sleep(time.Second/time.Duration(fps) - time.Since(t))
@@ -119,13 +140,13 @@ func main() {
 	gl.DeleteProgram(program)
 }
 
-func updColor(program uint32) {
+func upd(program uint32) {
 	gl.UseProgram(program)
 	t := glfw.GetTime()
 	redValue := math.Abs(math.Cos(t))
 	greenValue := math.Abs(math.Cos(t + 1))
 	blueValue := math.Abs(math.Cos(t + 2))
-	// fmt.Printf("%.2f %.2f %.2f\n", redValue, greenValue, blueValue)
+	//fmt.Printf("%.2f %.2f %.2f\n", redValue, greenValue, blueValue)
 	vertexColorLocation := gl.GetUniformLocation(program, gl.Str("ourColor\x00"))
 	gl.Uniform4f(vertexColorLocation, float32(redValue), float32(greenValue), float32(blueValue), 1.0)
 }
