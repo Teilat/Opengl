@@ -52,22 +52,22 @@ var (
 		// 4 левый нижний дальний
 		-0.5, -0.5, -0.5,
 		1.0, 0.0, 0.0,
-		0.0, 0.0,
+		1.0, 0.0,
 
 		// 5 правый нижний дальний
 		0.5, -0.5, -0.5,
 		0.0, 1.0, 0.0,
-		1.0, 0.0,
+		0.0, 0.0,
 
 		// 6 левый верхний дальний
 		0.5, 0.5, -0.5,
 		0.0, 0.0, 1.0,
-		1.0, 1.0,
+		0.0, 1.0,
 
 		// 7 правый верхний дальний
 		-0.5, 0.5, -0.5,
 		1.0, 1.0, 1.0,
-		0.0, 1.0,
+		1.0, 1.0,
 	}
 
 	squareIndices = []uint32{
@@ -100,10 +100,10 @@ func main() {
 	program := initOpenGL()
 
 	gl.UseProgram(program)
-	gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
+	//gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
 	window.SetKeyCallback(input.KeyCallBack)
 
-	obj := object.NewObject(square, squareIndices)
+	obj := object.NewObject(square, squareIndices, "square.png")
 
 	projection := mgl32.Perspective(mgl32.DegToRad(40), float32(width)/height, 0.1, 10.0)
 	gl.UniformMatrix4fv(gl.GetUniformLocation(program, gl.Str("projection\x00")), 1, false, &projection[0])
