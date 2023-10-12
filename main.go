@@ -39,12 +39,12 @@ var (
 		0.0, 1.0, 0.0,
 		1.0, 0.0,
 
-		// левый верхний ближний
+		// правый верхний ближний
 		0.5, 0.5, 0.5,
 		0.0, 0.0, 1.0,
 		1.0, 1.0,
 
-		// правый верхний ближний
+		// левый верхний ближний
 		-0.5, 0.5, 0.5,
 		1.0, 1.0, 1.0,
 		0.0, 1.0,
@@ -72,22 +72,22 @@ var (
 
 	squareIndices = []uint32{
 		// front
-		0, 1, 2,
-		0, 3, 2,
+		3, 1, 2,
+		3, 0, 1,
 		// back
 		4, 5, 6,
 		4, 7, 6,
 		//bottom
-		0, 1, 4,
-		0, 5, 4,
+		0, 1, 5,
+		0, 4, 5,
 		// top
-		2, 6, 3,
-		2, 7, 3,
+		2, 3, 7,
+		2, 6, 7,
 		// right
-		1, 5, 2,
-		1, 6, 2,
+		2, 5, 1,
+		2, 5, 6,
 		// left
-		0, 4, 3,
+		0, 7, 4,
 		0, 7, 3,
 	}
 )
@@ -100,7 +100,7 @@ func main() {
 	program := initOpenGL()
 
 	gl.UseProgram(program)
-	//gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
+	gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
 	window.SetKeyCallback(input.KeyCallBack)
 
 	obj := object.NewObject(square, squareIndices)
