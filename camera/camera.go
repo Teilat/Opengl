@@ -5,6 +5,9 @@ import "github.com/go-gl/mathgl/mgl32"
 type Camera struct {
 	pos            mgl32.Vec3
 	ShaderLocation int32
+	Fov            float32
+	AngleX         float32
+	AngleY         float32
 }
 
 func NewCamera(location int32, pos mgl32.Vec3) *Camera {

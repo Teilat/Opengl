@@ -26,7 +26,6 @@ const (
 )
 
 var updColor = false
-var a = float32(0)
 
 var (
 	square = []float32{
@@ -147,14 +146,9 @@ func upd(program uint32, vertexColorLocation int32, cam *camera.Camera) {
 	redValue := math.Abs(math.Cos(t))
 	greenValue := math.Abs(math.Cos(t + 1))
 	blueValue := math.Abs(math.Cos(t + 2))
-	//fmt.Printf("%.2f %.2f %.2f\n", redValue, greenValue, blueValue)
 
 	matrix := cam.GetMatrix4()
-	matrix = matrix.Mul4(mgl32.HomogRotate3D(a, mgl32.Vec3{0, 1, 0}))
-	a += 0.05
-	if a >= 360 {
-		a = 0
-	}
+	matrix = matrix.Mul4(mgl32.HomogRotate3D(float32(math.Mod(t, 360)), mgl32.Vec3{0, 1, 0}))
 	gl.Uniform4f(vertexColorLocation, float32(redValue), float32(greenValue), float32(blueValue), 1.0)
 	gl.UniformMatrix4fv(cam.ShaderLocation, 1, false, &matrix[0])
 }
