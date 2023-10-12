@@ -3,18 +3,19 @@ package main
 import (
 	"C"
 	"fmt"
-	"github.com/go-gl/mathgl/mgl32"
 	"log"
 	"math"
-	"opengl/input"
 	"runtime"
 	"time"
 
+	"opengl/camera"
+	"opengl/input"
 	"opengl/object"
 	"opengl/shader"
 
 	"github.com/go-gl/gl/v4.6-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
+	"github.com/go-gl/mathgl/mgl32"
 )
 
 const (
@@ -25,6 +26,7 @@ const (
 )
 
 var updColor = false
+var a = float32(0)
 
 var (
 	square = []float32{
@@ -104,21 +106,20 @@ func main() {
 
 	obj := object.NewObject(square, squareIndices)
 
-	projection := mgl32.Perspective(mgl32.DegToRad(40.0), float32(width)/height, 0.1, 10.0)
-	projectionUniform := gl.GetUniformLocation(program, gl.Str("projection\x00"))
-	gl.UniformMatrix4fv(projectionUniform, 1, false, &projection[0])
+	projection := mgl32.Perspective(mgl32.DegToRad(40), float32(width)/height, 0.1, 10.0)
+	gl.UniformMatrix4fv(gl.GetUniformLocation(program, gl.Str("projection\x00")), 1, false, &projection[0])
 
-	camera := mgl32.LookAtV(mgl32.Vec3{3, 2, 3}, mgl32.Vec3{0, 0, 0}, mgl32.Vec3{0, 1, 0})
-	cameraUniform := gl.GetUniformLocation(program, gl.Str("camera\x00"))
-	gl.UniformMatrix4fv(cameraUniform, 1, false, &camera[0])
+	cam := camera.NewCamera(gl.GetUniformLocation(program, gl.Str("camera\x00")), mgl32.Vec3{3, 0, 3})
+	gl.UniformMatrix4fv(cam.ShaderLocation, 1, false, cam.GetMatrix4fv())
 
 	model := mgl32.Ident4()
-	modelUniform := gl.GetUniformLocation(program, gl.Str("model\x00"))
-	gl.UniformMatrix4fv(modelUniform, 1, false, &model[0])
+	gl.UniformMatrix4fv(gl.GetUniformLocation(program, gl.Str("model\x00")), 1, false, &model[0])
 
 	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, obj.Texture)
 	gl.Uniform1i(gl.GetUniformLocation(program, gl.Str("tex\x00")), 0)
+
+	vertexColorLocation := gl.GetUniformLocation(program, gl.Str("ourColor\x00"))
 
 	for !window.ShouldClose() {
 		t := time.Now()
@@ -131,7 +132,7 @@ func main() {
 			updColor = !updColor
 		}
 		if updColor {
-			upd(program)
+			upd(program, vertexColorLocation, cam)
 		}
 
 		draw(obj.Vao, obj.Texture, window, program)
@@ -140,15 +141,22 @@ func main() {
 	gl.DeleteProgram(program)
 }
 
-func upd(program uint32) {
+func upd(program uint32, vertexColorLocation int32, cam *camera.Camera) {
 	gl.UseProgram(program)
 	t := glfw.GetTime()
 	redValue := math.Abs(math.Cos(t))
 	greenValue := math.Abs(math.Cos(t + 1))
 	blueValue := math.Abs(math.Cos(t + 2))
 	//fmt.Printf("%.2f %.2f %.2f\n", redValue, greenValue, blueValue)
-	vertexColorLocation := gl.GetUniformLocation(program, gl.Str("ourColor\x00"))
+
+	matrix := cam.GetMatrix4()
+	matrix = matrix.Mul4(mgl32.HomogRotate3D(a, mgl32.Vec3{0, 1, 0}))
+	a += 0.05
+	if a >= 360 {
+		a = 0
+	}
 	gl.Uniform4f(vertexColorLocation, float32(redValue), float32(greenValue), float32(blueValue), 1.0)
+	gl.UniformMatrix4fv(cam.ShaderLocation, 1, false, &matrix[0])
 }
 
 func draw(vao, texture uint32, window *glfw.Window, program uint32) {
