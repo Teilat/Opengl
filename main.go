@@ -31,42 +31,34 @@ var (
 	square = []float32{
 		// 0 левый нижний ближний
 		-0.5, -0.5, 0.5,
-		1.0, 0.0, 0.0,
 		0.0, 0.0,
 
 		// 1 правый нижний ближний
 		0.5, -0.5, 0.5,
-		0.0, 1.0, 0.0,
 		1.0, 0.0,
 
 		// 2 правый верхний ближний
 		0.5, 0.5, 0.5,
-		0.0, 0.0, 1.0,
 		1.0, 1.0,
 
 		// 3 левый верхний ближний
 		-0.5, 0.5, 0.5,
-		1.0, 1.0, 1.0,
 		0.0, 1.0,
 
 		// 4 левый нижний дальний
 		-0.5, -0.5, -0.5,
-		1.0, 0.0, 0.0,
 		1.0, 0.0,
 
 		// 5 правый нижний дальний
 		0.5, -0.5, -0.5,
-		0.0, 1.0, 0.0,
 		0.0, 0.0,
 
-		// 6 левый верхний дальний
+		// 6 првавый верхний дальний
 		0.5, 0.5, -0.5,
-		0.0, 0.0, 1.0,
 		0.0, 1.0,
 
-		// 7 правый верхний дальний
+		// 7 левый верхний дальний
 		-0.5, 0.5, -0.5,
-		1.0, 1.0, 1.0,
 		1.0, 1.0,
 	}
 
@@ -100,15 +92,16 @@ func main() {
 	program := initOpenGL()
 
 	gl.UseProgram(program)
+	gl.Enable(gl.DEPTH_TEST)
 	//gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
 	window.SetKeyCallback(input.KeyCallBack)
 
-	obj := object.NewObject(square, squareIndices, "square.png")
+	obj := object.NewObject(square, squareIndices, mgl32.Vec3{1, 0, 0}, "square.png")
 
-	projection := mgl32.Perspective(mgl32.DegToRad(40), float32(width)/height, 0.1, 10.0)
+	projection := mgl32.Perspective(mgl32.DegToRad(40), float32(width)/height, 0.1, 100.0)
 	gl.UniformMatrix4fv(gl.GetUniformLocation(program, gl.Str("projection\x00")), 1, false, &projection[0])
 
-	cam := camera.NewCamera(gl.GetUniformLocation(program, gl.Str("camera\x00")), mgl32.Vec3{3, 0, 3})
+	cam := camera.NewCamera(gl.GetUniformLocation(program, gl.Str("camera\x00")), mgl32.Vec3{3, 2, 3})
 	gl.UniformMatrix4fv(cam.ShaderLocation, 1, false, cam.GetMatrix4fv())
 
 	model := mgl32.Ident4()
@@ -125,7 +118,7 @@ func main() {
 
 		glfw.PollEvents()
 
-		gl.Clear(gl.COLOR_BUFFER_BIT)
+		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
 		if input.GetKeyDown(glfw.KeySpace) {
 			updColor = !updColor

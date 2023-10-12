@@ -3,6 +3,7 @@ package object
 import (
 	"fmt"
 	"github.com/go-gl/gl/v4.6-core/gl"
+	"github.com/go-gl/mathgl/mgl32"
 	"image"
 	"image/draw"
 	"image/png"
@@ -15,14 +16,16 @@ type Object struct {
 	Indices  []uint32
 	Vao      uint32
 	Texture  uint32
+	Pos      mgl32.Vec3
 }
 
-func NewObject(vertices []float32, indices []uint32, texture string) *Object {
+func NewObject(vertices []float32, indices []uint32, pos mgl32.Vec3, texture string) *Object {
 	return &Object{
 		vertices: vertices,
 		Indices:  indices,
 		Vao:      makeVAO(vertices, indices),
 		Texture:  bindTexture(texture),
+		Pos:      pos,
 	}
 }
 
@@ -30,7 +33,7 @@ func NewObject(vertices []float32, indices []uint32, texture string) *Object {
 // Этот метод по другому формирует объект с данными
 func makeVAO(vertices []float32, indices []uint32) uint32 {
 	var vertexArrayObject, vertexBufferObject, indexBufferObject uint32
-	stride := 8 * int32(unsafe.Sizeof(float32(0)))
+	stride := 5 * int32(unsafe.Sizeof(float32(0)))
 
 	gl.GenVertexArrays(1, &vertexArrayObject)
 	gl.GenBuffers(1, &vertexBufferObject)
@@ -46,11 +49,8 @@ func makeVAO(vertices []float32, indices []uint32) uint32 {
 	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, stride, nil)
 	gl.EnableVertexAttribArray(0)
 	// создаем указатель, но уже с офсетом в битах
-	gl.VertexAttribPointerWithOffset(1, 3, gl.FLOAT, false, stride, uintptr(3*int(unsafe.Sizeof(float32(0)))))
+	gl.VertexAttribPointerWithOffset(1, 2, gl.FLOAT, false, stride, uintptr(3*int(unsafe.Sizeof(float32(0)))))
 	gl.EnableVertexAttribArray(1)
-
-	gl.VertexAttribPointerWithOffset(2, 2, gl.FLOAT, false, stride, uintptr(6*int(unsafe.Sizeof(float32(0)))))
-	gl.EnableVertexAttribArray(2)
 
 	// создаем буфер индексов к массиву вертексов
 	// тк это именно буфер индексов, делать указатель для шейдера ему не нужно
