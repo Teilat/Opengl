@@ -25,8 +25,6 @@ const (
 	fps = 75
 )
 
-var updColor = false
-
 var (
 	square = []float32{
 		// 0 левый нижний ближний
@@ -98,14 +96,11 @@ func main() {
 
 	obj := object.NewObject(square, squareIndices, mgl32.Vec3{1, 0, 0}, "square.png")
 
-	projection := mgl32.Perspective(mgl32.DegToRad(40), float32(width)/height, 0.1, 100.0)
+	projection := mgl32.Perspective(mgl32.DegToRad(45), float32(width)/height, 0.1, 100.0)
 	gl.UniformMatrix4fv(gl.GetUniformLocation(program, gl.Str("projection\x00")), 1, false, &projection[0])
 
 	cam := camera.NewCamera(gl.GetUniformLocation(program, gl.Str("camera\x00")), mgl32.Vec3{3, 2, 3})
 	gl.UniformMatrix4fv(cam.ShaderLocation, 1, false, cam.GetMatrix4fv())
-
-	model := mgl32.Ident4()
-	gl.UniformMatrix4fv(gl.GetUniformLocation(program, gl.Str("model\x00")), 1, false, &model[0])
 
 	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, obj.Texture)
@@ -120,14 +115,9 @@ func main() {
 
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-		if input.GetKeyDown(glfw.KeySpace) {
-			updColor = !updColor
-		}
-		if updColor {
-			upd(program, vertexColorLocation, cam)
-		}
+		upd(program, vertexColorLocation, cam)
+		draw(obj, window, program)
 
-		draw(obj.Vao, obj.Texture, window, program)
 		time.Sleep(time.Second/time.Duration(fps) - time.Since(t))
 	}
 	gl.DeleteProgram(program)
@@ -146,12 +136,15 @@ func upd(program uint32, vertexColorLocation int32, cam *camera.Camera) {
 	gl.UniformMatrix4fv(cam.ShaderLocation, 1, false, &matrix[0])
 }
 
-func draw(vao, texture uint32, window *glfw.Window, program uint32) {
+func draw(obj *object.Object, window *glfw.Window, program uint32) {
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 	gl.UseProgram(program)
 
-	gl.BindTexture(gl.TEXTURE_2D, texture)
-	gl.BindVertexArray(vao)
+	gl.BindTexture(gl.TEXTURE_2D, obj.Texture)
+	gl.BindVertexArray(obj.Vao)
+
+	model := mgl32.Translate3D(obj.Pos.Elem())
+	gl.UniformMatrix4fv(gl.GetUniformLocation(program, gl.Str("model\x00")), 1, false, &model[0])
 	gl.DrawElements(gl.TRIANGLES, int32(len(squareIndices)), gl.UNSIGNED_INT, nil)
 
 	window.SwapBuffers()
