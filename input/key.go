@@ -151,7 +151,7 @@ func KeyCallBack(window *glfw.Window, key glfw.Key, _ int, action glfw.Action, _
 }
 
 func GetKey(key glfw.Key) bool {
-	return keys[key].Repeat
+	return keys[key].Repeat || keys[key].Press
 }
 
 func GetKeyDown(key glfw.Key) bool {

@@ -166,24 +166,24 @@ func upd(program uint32, vertexColorLocation int32, cam *camera.Camera) {
 	greenValue := math.Abs(math.Cos(t + 1))
 	blueValue := math.Abs(math.Cos(t + 2))
 
-	if input.GetKey(glfw.KeyW) || input.GetKeyDown(glfw.KeyW) {
+	if input.GetKey(glfw.KeyW) {
 		cam.Move(cam.GetLookAt().Mul(0.2))
 	}
-	if input.GetKey(glfw.KeyS) || input.GetKeyDown(glfw.KeyS) {
+	if input.GetKey(glfw.KeyS) {
 		cam.Move(cam.GetLookAt().Mul(-0.2))
 	}
 
-	if input.GetKey(glfw.KeyD) || input.GetKeyDown(glfw.KeyD) {
+	if input.GetKey(glfw.KeyD) {
 		cam.Move(cam.GetLookAt().Cross(mgl32.Vec3{0, 1, 0}).Mul(0.2))
 	}
-	if input.GetKey(glfw.KeyA) || input.GetKeyDown(glfw.KeyA) {
+	if input.GetKey(glfw.KeyA) {
 		cam.Move(cam.GetLookAt().Cross(mgl32.Vec3{0, 1, 0}).Mul(-0.2))
 	}
 
-	if input.GetKey(glfw.KeyLeftControl) || input.GetKeyDown(glfw.KeyLeftControl) {
+	if input.GetKey(glfw.KeyLeftControl) {
 		cam.Move(cam.GetLookAt().Cross(mgl32.Vec3{1, 0, 0}).Mul(0.2))
 	}
-	if input.GetKey(glfw.KeySpace) || input.GetKeyDown(glfw.KeySpace) {
+	if input.GetKey(glfw.KeySpace) {
 		cam.Move(cam.GetLookAt().Cross(mgl32.Vec3{1, 0, 0}).Mul(-0.2))
 	}
 
