@@ -16,7 +16,7 @@ type Object struct {
 	Indices  []uint32
 	Vao      uint32
 	Texture  uint32
-	Pos      mgl32.Vec3
+	pos      mgl32.Vec3
 }
 
 func NewObject(vertices []float32, indices []uint32, pos mgl32.Vec3, texture string) *Object {
@@ -25,8 +25,16 @@ func NewObject(vertices []float32, indices []uint32, pos mgl32.Vec3, texture str
 		Indices:  indices,
 		Vao:      makeVAO(vertices, indices),
 		Texture:  bindTexture(texture),
-		Pos:      pos,
+		pos:      pos,
 	}
+}
+
+func (o *Object) GetPos() mgl32.Vec3 {
+	return o.pos
+}
+
+func (o *Object) Move(pos mgl32.Vec3) {
+	o.pos = pos
 }
 
 // makeVAO initializes and returns a vertex array from the points provided.

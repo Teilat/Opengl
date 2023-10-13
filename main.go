@@ -26,7 +26,7 @@ const (
 )
 
 var (
-	square = []float32{
+	squareInd = []float32{
 		// 0 левый нижний ближний
 		-0.5, -0.5, 0.5, 0.0, 0.0,
 
@@ -50,6 +50,49 @@ var (
 
 		// 7 левый верхний дальний
 		-0.5, 0.5, -0.5, 1.0, 1.0,
+	}
+	square = []float32{
+		-0.5, -0.5, -0.5, 0.0, 0.0,
+		0.5, -0.5, -0.5, 1.0, 0.0,
+		0.5, 0.5, -0.5, 1.0, 1.0,
+		0.5, 0.5, -0.5, 1.0, 1.0,
+		-0.5, 0.5, -0.5, 0.0, 1.0,
+		-0.5, -0.5, -0.5, 0.0, 0.0,
+
+		-0.5, -0.5, 0.5, 0.0, 0.0,
+		0.5, -0.5, 0.5, 1.0, 0.0,
+		0.5, 0.5, 0.5, 1.0, 1.0,
+		0.5, 0.5, 0.5, 1.0, 1.0,
+		-0.5, 0.5, 0.5, 0.0, 1.0,
+		-0.5, -0.5, 0.5, 0.0, 0.0,
+
+		-0.5, 0.5, 0.5, 1.0, 0.0,
+		-0.5, 0.5, -0.5, 1.0, 1.0,
+		-0.5, -0.5, -0.5, 0.0, 1.0,
+		-0.5, -0.5, -0.5, 0.0, 1.0,
+		-0.5, -0.5, 0.5, 0.0, 0.0,
+		-0.5, 0.5, 0.5, 1.0, 0.0,
+
+		0.5, 0.5, 0.5, 1.0, 0.0,
+		0.5, 0.5, -0.5, 1.0, 1.0,
+		0.5, -0.5, -0.5, 0.0, 1.0,
+		0.5, -0.5, -0.5, 0.0, 1.0,
+		0.5, -0.5, 0.5, 0.0, 0.0,
+		0.5, 0.5, 0.5, 1.0, 0.0,
+
+		-0.5, -0.5, -0.5, 0.0, 1.0,
+		0.5, -0.5, -0.5, 1.0, 1.0,
+		0.5, -0.5, 0.5, 1.0, 0.0,
+		0.5, -0.5, 0.5, 1.0, 0.0,
+		-0.5, -0.5, 0.5, 0.0, 0.0,
+		-0.5, -0.5, -0.5, 0.0, 1.0,
+
+		-0.5, 0.5, -0.5, 0.0, 1.0,
+		0.5, 0.5, -0.5, 1.0, 1.0,
+		0.5, 0.5, 0.5, 1.0, 0.0,
+		0.5, 0.5, 0.5, 1.0, 0.0,
+		-0.5, 0.5, 0.5, 0.0, 0.0,
+		-0.5, 0.5, -0.5, 0.0, 1.0,
 	}
 
 	squareIndices = []uint32{
@@ -86,12 +129,12 @@ func main() {
 	//gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
 	window.SetKeyCallback(input.KeyCallBack)
 
-	obj := object.NewObject(square, squareIndices, mgl32.Vec3{1, 0, 0}, "square.png")
+	obj := object.NewObject(square, squareIndices, mgl32.Vec3{0, 0, 0}, "square.png")
 
 	projection := mgl32.Perspective(mgl32.DegToRad(45), float32(width)/height, 0.1, 100.0)
 	gl.UniformMatrix4fv(gl.GetUniformLocation(program, gl.Str("projection\x00")), 1, false, &projection[0])
 
-	cam := camera.NewCamera(gl.GetUniformLocation(program, gl.Str("camera\x00")), mgl32.Vec3{3, 2, 3})
+	cam := camera.NewCamera(gl.GetUniformLocation(program, gl.Str("camera\x00")), mgl32.Vec3{1, 1, 1})
 	gl.UniformMatrix4fv(cam.ShaderLocation, 1, false, cam.GetMatrix4fv())
 
 	gl.ActiveTexture(gl.TEXTURE0)
@@ -105,6 +148,7 @@ func main() {
 
 		glfw.PollEvents()
 
+		gl.ClearColor(0.2, 0.3, 0.3, 1.0)
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
 		upd(program, vertexColorLocation, cam)
@@ -122,10 +166,29 @@ func upd(program uint32, vertexColorLocation int32, cam *camera.Camera) {
 	greenValue := math.Abs(math.Cos(t + 1))
 	blueValue := math.Abs(math.Cos(t + 2))
 
-	matrix := cam.GetMatrix4()
-	matrix = matrix.Mul4(mgl32.HomogRotate3D(float32(math.Mod(t, 360)), mgl32.Vec3{0, 1, 0}))
+	if input.GetKey(glfw.KeyW) || input.GetKeyDown(glfw.KeyW) {
+		cam.Move(cam.GetLookAt().Mul(0.2))
+	}
+	if input.GetKey(glfw.KeyS) || input.GetKeyDown(glfw.KeyS) {
+		cam.Move(cam.GetLookAt().Mul(-0.2))
+	}
+
+	if input.GetKey(glfw.KeyD) || input.GetKeyDown(glfw.KeyD) {
+		cam.Move(cam.GetLookAt().Cross(mgl32.Vec3{0, 1, 0}).Mul(0.2))
+	}
+	if input.GetKey(glfw.KeyA) || input.GetKeyDown(glfw.KeyA) {
+		cam.Move(cam.GetLookAt().Cross(mgl32.Vec3{0, 1, 0}).Mul(-0.2))
+	}
+
+	if input.GetKey(glfw.KeyLeftControl) || input.GetKeyDown(glfw.KeyLeftControl) {
+		cam.Move(cam.GetLookAt().Cross(mgl32.Vec3{1, 0, 0}).Mul(0.2))
+	}
+	if input.GetKey(glfw.KeySpace) || input.GetKeyDown(glfw.KeySpace) {
+		cam.Move(cam.GetLookAt().Cross(mgl32.Vec3{1, 0, 0}).Mul(-0.2))
+	}
+
 	gl.Uniform4f(vertexColorLocation, float32(redValue), float32(greenValue), float32(blueValue), 1.0)
-	gl.UniformMatrix4fv(cam.ShaderLocation, 1, false, &matrix[0])
+	gl.UniformMatrix4fv(cam.ShaderLocation, 1, false, cam.GetMatrix4fv())
 }
 
 func draw(obj *object.Object, window *glfw.Window, program uint32) {
@@ -134,9 +197,11 @@ func draw(obj *object.Object, window *glfw.Window, program uint32) {
 	gl.BindTexture(gl.TEXTURE_2D, obj.Texture)
 	gl.BindVertexArray(obj.Vao)
 
-	model := mgl32.Translate3D(obj.Pos.Elem())
+	model := mgl32.Translate3D(obj.GetPos().Elem())
 	gl.UniformMatrix4fv(gl.GetUniformLocation(program, gl.Str("model\x00")), 1, false, &model[0])
-	gl.DrawElements(gl.TRIANGLES, int32(len(squareIndices)), gl.UNSIGNED_INT, nil)
+	// не работает нормально наложение текстур
+	// gl.DrawElements(gl.TRIANGLES, int32(len(squareIndices)), gl.UNSIGNED_INT, nil)
+	gl.DrawArrays(gl.TRIANGLES, 0, int32(len(square)))
 
 	window.SwapBuffers()
 }
