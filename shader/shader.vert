@@ -8,8 +8,7 @@ uniform mat4 camera;
 uniform mat4 model;
 
 out vec2 texturePos;
-out vec3 verColor;
 void main() {
-	texturePos = texturePosition;
+	texturePos = vec2(texturePosition.x, 1.0-texturePosition.y);
 	gl_Position = projection * camera * model * vec4(vertexPosition, 1);
 }
