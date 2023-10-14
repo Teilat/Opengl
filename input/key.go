@@ -142,7 +142,7 @@ var modKeys = map[glfw.ModifierKey]bool{
 	glfw.ModAlt:     false,
 }
 
-func KeyCallBack(window *glfw.Window, key glfw.Key, _ int, action glfw.Action, _ glfw.ModifierKey) {
+func KeyCallback(window *glfw.Window, key glfw.Key, _ int, action glfw.Action, _ glfw.ModifierKey) {
 	if key == glfw.KeyEscape && action == glfw.Press {
 		window.SetShouldClose(true)
 	}

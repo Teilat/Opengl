@@ -27,29 +27,14 @@ const (
 
 var (
 	squareInd = []float32{
-		// 0 левый нижний ближний
-		-0.5, -0.5, 0.5, 0.0, 0.0,
-
-		// 1 правый нижний ближний
-		0.5, -0.5, 0.5, 1.0, 0.0,
-
-		// 2 правый верхний ближний
-		0.5, 0.5, 0.5, 1.0, 1.0,
-
-		// 3 левый верхний ближний
-		-0.5, 0.5, 0.5, 0.0, 1.0,
-
-		// 4 левый нижний дальний
-		-0.5, -0.5, -0.5, 1.0, 0.0,
-
-		// 5 правый нижний дальний
-		0.5, -0.5, -0.5, 0.0, 0.0,
-
-		// 6 првавый верхний дальний
-		0.5, 0.5, -0.5, 0.0, 1.0,
-
-		// 7 левый верхний дальний
-		-0.5, 0.5, -0.5, 1.0, 1.0,
+		-0.5, -0.5, 0.5, 0.0, 0.0, // 0 левый нижний ближний
+		0.5, -0.5, 0.5, 1.0, 0.0, // 1 правый нижний ближний
+		0.5, 0.5, 0.5, 1.0, 1.0, // 2 правый верхний ближний
+		-0.5, 0.5, 0.5, 0.0, 1.0, // 3 левый верхний ближний
+		-0.5, -0.5, -0.5, 1.0, 0.0, // 4 левый нижний дальний
+		0.5, -0.5, -0.5, 0.0, 0.0, // 5 правый нижний дальний
+		0.5, 0.5, -0.5, 0.0, 1.0, // 6 првавый верхний дальний
+		-0.5, 0.5, -0.5, 1.0, 1.0, // 7 левый верхний дальний
 	}
 	square = []float32{
 		-0.5, -0.5, -0.5, 0.0, 0.0,
@@ -127,7 +112,8 @@ func main() {
 	gl.UseProgram(program)
 	gl.Enable(gl.DEPTH_TEST)
 	//gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
-	window.SetKeyCallback(input.KeyCallBack)
+	window.SetKeyCallback(input.KeyCallback)
+	window.SetCursorPosCallback(input.CursorCallback)
 
 	obj := object.NewObject(square, squareIndices, mgl32.Vec3{0, 0, 0}, "square.png")
 
@@ -165,6 +151,8 @@ func upd(program uint32, vertexColorLocation int32, cam *camera.Camera) {
 	redValue := math.Abs(math.Cos(t))
 	greenValue := math.Abs(math.Cos(t + 1))
 	blueValue := math.Abs(math.Cos(t + 2))
+
+	cam.CalcLookAt()
 
 	if input.GetKey(glfw.KeyW) {
 		cam.Move(cam.GetLookAt().Mul(0.2))
@@ -227,6 +215,10 @@ func initGlfw() *glfw.Window {
 		panic(err)
 	}
 	window.MakeContextCurrent()
+	window.SetInputMode(glfw.CursorMode, glfw.CursorDisabled)
+	if glfw.RawMouseMotionSupported() {
+		window.SetInputMode(glfw.RawMouseMotion, glfw.True)
+	}
 
 	return window
 }
