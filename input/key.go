@@ -3,6 +3,7 @@ package input
 import (
 	"fmt"
 	"github.com/go-gl/glfw/v3.3/glfw"
+	"opengl/support"
 	"time"
 )
 
@@ -11,6 +12,15 @@ type keyAttr struct {
 	Press   bool
 	Repeat  bool
 }
+
+type Axis int
+
+const (
+	Horizontal Axis = iota // A,D,ArrowLeft,ArrowRight
+	Vertical               // W,S,ArrowUp,ArrowDown
+	MouseX
+	MouseY
+)
 
 var keys = map[glfw.Key]keyAttr{
 	glfw.KeyUnknown:      {},
@@ -162,14 +172,36 @@ func GetKeyUp(key glfw.Key) bool {
 	return keys[key].Release
 }
 
-func GetShift() bool {
-	return modKeys[glfw.ModShift]
+func GetAxis(axis Axis) float32 {
+	switch axis {
+	case Horizontal:
+		return support.BoolToFloat(GetKey(glfw.KeyA) || GetKey(glfw.KeyLeft))*-1 +
+			support.BoolToFloat(GetKey(glfw.KeyD) || GetKey(glfw.KeyRight))*1
+	case Vertical:
+		return support.BoolToFloat(GetKey(glfw.KeyS) || GetKey(glfw.KeyDown))*-1 +
+			support.BoolToFloat(GetKey(glfw.KeyW) || GetKey(glfw.KeyUp))*1
+	case MouseX:
+		o := offsetX
+		offsetX = 0
+		return float32(o)
+	case MouseY:
+		o := offsetY
+		offsetY = 0
+		return float32(o)
+	default:
+		return 0
+	}
 }
 
-func GetControl() bool {
-	return modKeys[glfw.ModControl]
-}
-
-func GetAlt() bool {
-	return modKeys[glfw.ModAlt]
-}
+// TODO
+// func GetShift() bool {
+// 	return modKeys[glfw.ModShift]
+// }
+//
+// func GetControl() bool {
+// 	return modKeys[glfw.ModControl]
+// }
+//
+// func GetAlt() bool {
+// 	return modKeys[glfw.ModAlt]
+// }

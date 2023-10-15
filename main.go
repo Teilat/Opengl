@@ -154,19 +154,11 @@ func upd(program uint32, vertexColorLocation int32, cam *camera.Camera) {
 
 	cam.CalcLookAt()
 
-	if input.GetKey(glfw.KeyW) {
-		cam.Move(cam.GetLookAt().Mul(0.2))
-	}
-	if input.GetKey(glfw.KeyS) {
-		cam.Move(cam.GetLookAt().Mul(-0.2))
-	}
+	movementX := input.GetAxis(input.Horizontal)
+	movementZ := input.GetAxis(input.Vertical)
 
-	if input.GetKey(glfw.KeyD) {
-		cam.Move(cam.GetLookAt().Cross(mgl32.Vec3{0, 1, 0}).Mul(0.2))
-	}
-	if input.GetKey(glfw.KeyA) {
-		cam.Move(cam.GetLookAt().Cross(mgl32.Vec3{0, 1, 0}).Mul(-0.2))
-	}
+	cam.Move(cam.GetLookAt().Mul(movementZ * 0.2))
+	cam.Move(cam.GetLookAt().Cross(mgl32.Vec3{0, 1, 0}).Mul(movementX * 0.2))
 
 	if input.GetKey(glfw.KeyLeftControl) {
 		cam.Move(cam.GetLookAt().Cross(mgl32.Vec3{1, 0, 0}).Mul(0.2))
