@@ -12,6 +12,6 @@ var (
 )
 
 func CursorCallback(window *glfw.Window, posX float64, posY float64) {
-	posXx = -math.Mod(posX*sensitivity, 360)
-	posYy = posY * sensitivity
+	posXx = math.Mod(posX*sensitivity, 360)
+	posYy = -posY * sensitivity
 }
