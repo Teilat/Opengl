@@ -172,7 +172,7 @@ func GetKeyUp(key glfw.Key) bool {
 	return keys[key].Release
 }
 
-func GetAxis(axis Axis) float32 {
+func GetAxis(axis Axis) float64 {
 	switch axis {
 	case Horizontal:
 		return support.BoolToFloat(GetKey(glfw.KeyA) || GetKey(glfw.KeyLeft))*-1 +
@@ -181,9 +181,9 @@ func GetAxis(axis Axis) float32 {
 		return support.BoolToFloat(GetKey(glfw.KeyS) || GetKey(glfw.KeyDown))*-1 +
 			support.BoolToFloat(GetKey(glfw.KeyW) || GetKey(glfw.KeyUp))*1
 	case MouseX:
-		return float32(posXx)
+		return posXx
 	case MouseY:
-		return float32(posYy)
+		return posYy
 	default:
 		return 0
 	}

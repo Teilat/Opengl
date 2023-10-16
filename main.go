@@ -157,8 +157,8 @@ func upd(program uint32, vertexColorLocation int32, cam *camera.Camera) {
 	movementX := input.GetAxis(input.Horizontal)
 	movementZ := input.GetAxis(input.Vertical)
 
-	cam.Move(cam.GetLookAt().Mul(movementZ * 0.2))
-	cam.Move(cam.GetLookAt().Cross(mgl32.Vec3{0, 1, 0}).Mul(movementX * 0.2))
+	cam.Move(cam.GetLookAt().Mul(float32(movementZ * 0.2)))
+	cam.Move(cam.GetLookAt().Cross(mgl32.Vec3{0, 1, 0}).Mul(float32(movementX * 0.2)))
 
 	if input.GetKey(glfw.KeyLeftControl) {
 		cam.Move(cam.GetUp().Mul(-0.2))

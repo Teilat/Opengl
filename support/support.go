@@ -10,7 +10,7 @@ func RadToDeg(angle float64) float64 {
 	return angle * 180 / math.Pi
 }
 
-func BoolToFloat(a bool) float32 {
+func BoolToFloat(a bool) float64 {
 	if a {
 		return 1
 	}

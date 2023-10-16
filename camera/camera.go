@@ -2,6 +2,7 @@ package camera
 
 import (
 	"github.com/go-gl/mathgl/mgl32"
+	"github.com/go-gl/mathgl/mgl64"
 	"math"
 	"opengl/input"
 )
@@ -13,8 +14,8 @@ type Camera struct {
 	right          mgl32.Vec3
 	ShaderLocation int32
 	Fov            float32
-	AngleX         float32 // yaw
-	AngleY         float32 // pitch
+	AngleX         float64 // yaw
+	AngleY         float64 // pitch
 }
 
 func NewCamera(location int32, pos mgl32.Vec3) *Camera {
@@ -38,9 +39,9 @@ func (c *Camera) CalcLookAt() {
 	}
 
 	c.lookAt = mgl32.Vec3{
-		float32(math.Cos(float64(mgl32.DegToRad(c.AngleY))) * math.Cos(float64(mgl32.DegToRad(c.AngleX)))),
-		float32(math.Sin(float64(mgl32.DegToRad(c.AngleY)))),
-		float32(math.Cos(float64(mgl32.DegToRad(c.AngleY))) * math.Sin(float64(mgl32.DegToRad(c.AngleX)))),
+		float32(math.Cos(mgl64.DegToRad(c.AngleY)) * math.Cos(mgl64.DegToRad(c.AngleX))),
+		float32(math.Sin(mgl64.DegToRad(c.AngleY))),
+		float32(math.Cos(mgl64.DegToRad(c.AngleY)) * math.Sin(mgl64.DegToRad(c.AngleX))),
 	}.Normalize()
 }
 
