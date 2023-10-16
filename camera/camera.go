@@ -1,6 +1,7 @@
 package camera
 
 import (
+	"fmt"
 	"github.com/go-gl/mathgl/mgl32"
 	"opengl/input"
 )
@@ -23,11 +24,8 @@ func NewCamera(location int32, pos mgl32.Vec3) *Camera {
 }
 
 func (c *Camera) CalcLookAt() {
-	offsetX := input.GetAxis(input.MouseX)
-	offsetY := input.GetAxis(input.MouseY)
-
-	c.AngleX += offsetX
-	c.AngleY += offsetY
+	c.AngleX = input.GetAxis(input.MouseX)
+	c.AngleY = input.GetAxis(input.MouseY)
 
 	if c.AngleY > 89 {
 		c.AngleY = 89
@@ -35,8 +33,9 @@ func (c *Camera) CalcLookAt() {
 	if c.AngleY < -89 {
 		c.AngleY = -89
 	}
+	fmt.Println(c.AngleX, c.AngleY)
 
-	c.lookAt = mgl32.SphericalToCartesian(1, mgl32.DegToRad(c.AngleX), mgl32.DegToRad(c.AngleY)).Normalize()
+	c.lookAt = mgl32.SphericalToCartesian(1, mgl32.DegToRad(c.AngleX), mgl32.DegToRad(c.AngleY))
 }
 
 func (c *Camera) GetPos() mgl32.Vec3 {

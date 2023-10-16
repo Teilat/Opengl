@@ -181,13 +181,9 @@ func GetAxis(axis Axis) float32 {
 		return support.BoolToFloat(GetKey(glfw.KeyS) || GetKey(glfw.KeyDown))*-1 +
 			support.BoolToFloat(GetKey(glfw.KeyW) || GetKey(glfw.KeyUp))*1
 	case MouseX:
-		o := offsetX
-		offsetX = 0
-		return float32(o)
+		return float32(posXx)
 	case MouseY:
-		o := offsetY
-		offsetY = 0
-		return float32(o)
+		return float32(posYy)
 	default:
 		return 0
 	}
