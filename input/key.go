@@ -159,9 +159,9 @@ func GetKey(key glfw.Key) bool {
 	return keys[key].Repeat || keys[key].Press
 }
 
-func GetKeyWithModKey(key glfw.Key, modKey glfw.ModifierKey) bool {
+func GetKeyPressWithModKey(key glfw.Key, modKey glfw.ModifierKey) bool {
 	if mKey == modKey {
-		return keys[key].Repeat || keys[key].Press
+		return keys[key].Press
 	}
 	return false
 }

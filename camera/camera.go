@@ -19,8 +19,6 @@ type Camera struct {
 
 	fov         float32
 	sensitivity float64
-	AngleX      float64 // yaw
-	AngleY      float64 // pitch
 
 	windowWidth  float32
 	windowHeight float32
@@ -55,20 +53,20 @@ func (c *Camera) Update() {
 }
 
 func (c *Camera) calcLookAt() {
-	c.AngleX = math.Mod(input.GetAxis(input.MouseX)*c.sensitivity, 360)
-	c.AngleY = input.GetAxis(input.MouseY) * c.sensitivity
+	angleX := math.Mod(input.GetAxis(input.MouseX)*c.sensitivity, 360) // yaw
+	angleY := input.GetAxis(input.MouseY) * c.sensitivity              // pitch
 
-	if c.AngleY > 89 {
-		c.AngleY = 89
+	if angleY > 89 {
+		angleY = 89
 	}
-	if c.AngleY < -89 {
-		c.AngleY = -89
+	if angleY < -89 {
+		angleY = -89
 	}
 
 	c.lookAt = mgl32.Vec3{
-		float32(math.Cos(mgl64.DegToRad(c.AngleY)) * math.Cos(mgl64.DegToRad(c.AngleX))),
-		float32(math.Sin(mgl64.DegToRad(c.AngleY))),
-		float32(math.Cos(mgl64.DegToRad(c.AngleY)) * math.Sin(mgl64.DegToRad(c.AngleX))),
+		float32(math.Cos(mgl64.DegToRad(angleY)) * math.Cos(mgl64.DegToRad(angleX))),
+		float32(math.Sin(mgl64.DegToRad(angleY))),
+		float32(math.Cos(mgl64.DegToRad(angleY)) * math.Sin(mgl64.DegToRad(angleX))),
 	}.Normalize()
 }
 

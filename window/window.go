@@ -3,13 +3,15 @@ package window
 import (
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"opengl/input"
+	"time"
 )
 
 type Window struct {
 	*glfw.Window
-	monitor    *glfw.Monitor
-	title      string
-	fullScreen bool
+	monitor        *glfw.Monitor
+	title          string
+	FullScreenLock time.Time
+	fullScreen     bool
 
 	posX        int
 	posY        int
@@ -23,7 +25,10 @@ func InitGlfw(width, height, refreshRate int, title string, fullscreen bool,
 	keyCallback func(w *glfw.Window, key glfw.Key, _ int, action glfw.Action, modKey glfw.ModifierKey),
 	cursorCallback func(window *glfw.Window, posX float64, posY float64),
 ) *Window {
-	if err := glfw.Init(); err != nil {
+	var monitor *glfw.Monitor
+	var window *glfw.Window
+	var err error
+	if err = glfw.Init(); err != nil {
 		panic(err)
 	}
 	glfw.WindowHint(glfw.Resizable, glfw.True)
@@ -31,23 +36,23 @@ func InitGlfw(width, height, refreshRate int, title string, fullscreen bool,
 	glfw.WindowHint(glfw.ContextVersionMinor, 6)
 	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLAnyProfile)
 	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
+	glfw.WindowHint(glfw.RefreshRate, refreshRate)
 
-	var monitor *glfw.Monitor
-
-	if fullscreen {
-		monitor = glfw.GetMonitors()[1]
-		if monitor == nil {
-			monitor = glfw.GetPrimaryMonitor()
-		}
-		vMode := monitor.GetVideoMode()
-		width = vMode.Width
-		height = vMode.Height
+	monitor = glfw.GetMonitors()[1]
+	if monitor == nil {
+		monitor = glfw.GetPrimaryMonitor()
 	}
 
-	window, err := glfw.CreateWindow(width, height, title, monitor, nil)
+	if fullscreen {
+		vMode := monitor.GetVideoMode()
+		window, err = glfw.CreateWindow(vMode.Width, vMode.Height, title, monitor, nil)
+	} else {
+		window, err = glfw.CreateWindow(width, height, title, nil, nil)
+	}
 	if err != nil {
 		panic(err)
 	}
+
 	window.MakeContextCurrent()
 	window.SetInputMode(glfw.CursorMode, glfw.CursorDisabled)
 	if glfw.RawMouseMotionSupported() {
@@ -57,19 +62,26 @@ func InitGlfw(width, height, refreshRate int, title string, fullscreen bool,
 	window.SetKeyCallback(keyCallback)
 	window.SetCursorPosCallback(cursorCallback)
 
-	return &Window{Window: window, height: height, width: width, refreshRate: refreshRate, title: title, monitor: nil}
+	return &Window{Window: window, height: height, width: width, refreshRate: refreshRate, title: title, monitor: monitor, FullScreenLock: time.Now()}
 }
 
 func (w *Window) GetWidth() int {
+	if w.fullScreen {
+		return w.monitor.GetVideoMode().Width
+	}
 	return w.width
 }
 
 func (w *Window) GetHeight() int {
+	if w.fullScreen {
+		return w.monitor.GetVideoMode().Height
+	}
 	return w.height
 }
 
 func (w *Window) UpdateWindow() bool {
-	if input.GetKeyWithModKey(glfw.KeyEnter, glfw.ModAlt) {
+	if input.GetKeyPressWithModKey(glfw.KeyEnter, glfw.ModAlt) && time.Since(w.FullScreenLock) > time.Millisecond*250 {
+		w.FullScreenLock = time.Now()
 		w.switchWindowMode()
 		return true
 	}
@@ -78,11 +90,10 @@ func (w *Window) UpdateWindow() bool {
 
 func (w *Window) switchWindowMode() {
 	if w.fullScreen {
-		w.monitor = nil
+		x, y, _, _ := w.monitor.GetWorkarea()
 		// refreshRate ignored when windowed
-		w.SetMonitor(w.monitor, w.posX, w.posY, w.width, w.height, 0)
+		w.SetMonitor(nil, x+20, y+50, w.width, w.height, 0)
 	} else {
-		w.monitor = glfw.GetPrimaryMonitor()
 		vMode := w.monitor.GetVideoMode()
 		w.SetMonitor(w.monitor, 0, 0, vMode.Width, vMode.Height, vMode.RefreshRate)
 	}

@@ -129,6 +129,7 @@ func main() {
 		glfw.PollEvents()
 		if win.UpdateWindow() {
 			cam.UpdateWindow(win.GetWidth(), win.GetHeight())
+			gl.Viewport(0, 0, int32(win.GetWidth()), int32(win.GetHeight()))
 		}
 
 		gl.ClearColor(0.2, 0.3, 0.3, 1.0)
@@ -170,8 +171,6 @@ func draw(obj *object.Object, program uint32) {
 
 // initOpenGL initializes OpenGL and returns an intiialized program.
 func initOpenGL() uint32 {
-	shaders := make([]uint32, 0)
-
 	if err := gl.Init(); err != nil {
 		panic(err)
 	}
@@ -181,13 +180,11 @@ func initOpenGL() uint32 {
 	if err != nil {
 		fmt.Println(err)
 	}
-	shaders = append(shaders, fragmentShader)
 
 	vertexShader, err := shader.CompileShader("shader.vert", gl.VERTEX_SHADER)
 	if err != nil {
 		fmt.Println(err)
 	}
-	shaders = append(shaders, vertexShader)
 
 	program := gl.CreateProgram()
 
