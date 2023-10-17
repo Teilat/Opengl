@@ -1,10 +1,8 @@
 package input
 
 import (
-	"fmt"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"opengl/support"
-	"time"
 )
 
 type keyAttr struct {
@@ -146,18 +144,12 @@ var keys = map[glfw.Key]keyAttr{
 	glfw.KeyMenu:         {},
 }
 
-var modKeys = map[glfw.ModifierKey]bool{
-	glfw.ModShift:   false,
-	glfw.ModControl: false,
-	glfw.ModAlt:     false,
-}
-
 func KeyCallback(window *glfw.Window, key glfw.Key, _ int, action glfw.Action, _ glfw.ModifierKey) {
 	if key == glfw.KeyEscape && action == glfw.Press {
 		window.SetShouldClose(true)
 	}
 	keys[key] = keyAttr{action == 0, action == 1, action == 2}
-	fmt.Printf("%s:\"%s\"%+v\n", time.Now().Format("04:05.000"), string(rune(key)), keys[key])
+	// fmt.Printf("%s:\"%s\"%+v\n", time.Now().Format("04:05.000"), string(rune(key)), keys[key])
 }
 
 func GetKey(key glfw.Key) bool {
@@ -188,16 +180,3 @@ func GetAxis(axis Axis) float64 {
 		return 0
 	}
 }
-
-// TODO
-// func GetShift() bool {
-// 	return modKeys[glfw.ModShift]
-// }
-//
-// func GetControl() bool {
-// 	return modKeys[glfw.ModControl]
-// }
-//
-// func GetAlt() bool {
-// 	return modKeys[glfw.ModAlt]
-// }

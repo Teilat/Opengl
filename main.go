@@ -18,9 +18,9 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 )
 
-const (
-	width  = 800
-	height = 600
+var (
+	Width  = 800
+	Height = 600
 
 	fps = 75
 )
@@ -116,12 +116,7 @@ func main() {
 	window.SetCursorPosCallback(input.CursorCallback)
 
 	obj := object.NewObject(square, squareIndices, mgl32.Vec3{0, 0, 0}, "square.png")
-
-	projection := mgl32.Perspective(mgl32.DegToRad(45), float32(width)/height, 0.1, 100.0)
-	gl.UniformMatrix4fv(gl.GetUniformLocation(program, gl.Str("projection\x00")), 1, false, &projection[0])
-
-	cam := camera.NewCamera(gl.GetUniformLocation(program, gl.Str("camera\x00")), mgl32.Vec3{1, 1, 1})
-	gl.UniformMatrix4fv(cam.ShaderLocation, 1, false, cam.GetMatrix4fv())
+	cam := camera.NewCamera(program, "camera\x00", "projection\x00", 45, mgl32.Vec3{1, 1, 1}, Width, Height)
 
 	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, obj.Texture)
@@ -151,24 +146,9 @@ func upd(program uint32, vertexColorLocation int32, cam *camera.Camera) {
 	redValue := math.Abs(math.Cos(t))
 	greenValue := math.Abs(math.Cos(t + 1))
 	blueValue := math.Abs(math.Cos(t + 2))
-
-	cam.CalcLookAt()
-
-	movementX := input.GetAxis(input.Horizontal)
-	movementZ := input.GetAxis(input.Vertical)
-
-	cam.Move(cam.GetLookAt().Mul(float32(movementZ * 0.2)))
-	cam.Move(cam.GetLookAt().Cross(mgl32.Vec3{0, 1, 0}).Mul(float32(movementX * 0.2)))
-
-	if input.GetKey(glfw.KeyLeftControl) {
-		cam.Move(cam.GetUp().Mul(-0.2))
-	}
-	if input.GetKey(glfw.KeySpace) {
-		cam.Move(cam.GetUp().Mul(0.2))
-	}
-
 	gl.Uniform4f(vertexColorLocation, float32(redValue), float32(greenValue), float32(blueValue), 1.0)
-	gl.UniformMatrix4fv(cam.ShaderLocation, 1, false, cam.GetMatrix4fv())
+
+	cam.Update()
 }
 
 func draw(obj *object.Object, window *glfw.Window, program uint32) {
@@ -202,7 +182,7 @@ func initGlfw() *glfw.Window {
 		monitor = glfw.GetPrimaryMonitor()
 	}
 
-	window, err := glfw.CreateWindow(width, height, "Program", nil, nil)
+	window, err := glfw.CreateWindow(Width, Height, "Program", nil, nil)
 	if err != nil {
 		panic(err)
 	}
