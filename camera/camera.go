@@ -21,22 +21,32 @@ type Camera struct {
 	sensitivity float64
 	AngleX      float64 // yaw
 	AngleY      float64 // pitch
+
+	windowWidth  float32
+	windowHeight float32
 }
 
 func NewCamera(program uint32, location, projection string, fov float32, pos mgl32.Vec3, width, height int) *Camera {
 	c := &Camera{
-		pos:                      pos,
 		ShaderCameraLocation:     gl.GetUniformLocation(program, gl.Str(location)),
 		ShaderProjectionLocation: gl.GetUniformLocation(program, gl.Str(projection)),
-		fov:                      fov,
-		lookAt:                   mgl32.Vec3{0, 0, 0},
-		up:                       mgl32.Vec3{0, 1, 0},
+
+		pos:    pos,
+		lookAt: mgl32.Vec3{0, 0, 0},
+		up:     mgl32.Vec3{0, 1, 0},
+
+		fov:         fov,
+		sensitivity: 0.1,
+
+		windowHeight: float32(height),
+		windowWidth:  float32(width),
 	}
 
 	gl.UniformMatrix4fv(c.ShaderCameraLocation, 1, false, c.getCameraMatrix4fv())
-	gl.UniformMatrix4fv(c.ShaderProjectionLocation, 1, false, c.getPerspectiveMatrix4fv(width, height))
+	gl.UniformMatrix4fv(c.ShaderProjectionLocation, 1, false, c.getPerspectiveMatrix4fv())
 	return c
 }
+
 func (c *Camera) Update() {
 	c.calcLookAt()
 	c.calcMovement()
@@ -45,7 +55,7 @@ func (c *Camera) Update() {
 }
 
 func (c *Camera) calcLookAt() {
-	c.AngleX = input.GetAxis(input.MouseX) * c.sensitivity
+	c.AngleX = math.Mod(input.GetAxis(input.MouseX)*c.sensitivity, 360)
 	c.AngleY = input.GetAxis(input.MouseY) * c.sensitivity
 
 	if c.AngleY > 89 {
@@ -93,12 +103,13 @@ func (c *Camera) SetPos(pos mgl32.Vec3) {
 	c.pos = pos
 }
 
-func (c *Camera) Move(move mgl32.Vec3) {
-	c.pos = c.pos.Add(move)
+func (c *Camera) UpdateWindow(width, height int) {
+	c.windowWidth, c.windowHeight = float32(width), float32(height)
+	gl.UniformMatrix4fv(c.ShaderProjectionLocation, 1, false, c.getPerspectiveMatrix4fv())
 }
 
-func (c *Camera) GetFov() float32 {
-	return c.fov
+func (c *Camera) Move(move mgl32.Vec3) {
+	c.pos = c.pos.Add(move)
 }
 
 func (c *Camera) getCameraMatrix4fv() *float32 {
@@ -106,7 +117,7 @@ func (c *Camera) getCameraMatrix4fv() *float32 {
 	return &val[0]
 }
 
-func (c *Camera) getPerspectiveMatrix4fv(width, height int) *float32 {
-	val := mgl32.Perspective(mgl32.DegToRad(c.fov), float32(width/height), 0.1, 100.0)
+func (c *Camera) getPerspectiveMatrix4fv() *float32 {
+	val := mgl32.Perspective(mgl32.DegToRad(c.fov), c.windowWidth/c.windowHeight, 0.1, 100.0)
 	return &val[0]
 }

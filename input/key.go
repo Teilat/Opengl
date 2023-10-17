@@ -144,16 +144,26 @@ var keys = map[glfw.Key]keyAttr{
 	glfw.KeyMenu:         {},
 }
 
-func KeyCallback(window *glfw.Window, key glfw.Key, _ int, action glfw.Action, _ glfw.ModifierKey) {
+var mKey glfw.ModifierKey
+
+func KeyCallback(w *glfw.Window, key glfw.Key, _ int, action glfw.Action, modKey glfw.ModifierKey) {
 	if key == glfw.KeyEscape && action == glfw.Press {
-		window.SetShouldClose(true)
+		w.SetShouldClose(true)
 	}
+	mKey = modKey
 	keys[key] = keyAttr{action == 0, action == 1, action == 2}
-	// fmt.Printf("%s:\"%s\"%+v\n", time.Now().Format("04:05.000"), string(rune(key)), keys[key])
+	// fmt.Printf("%s:\"%s\"%+v, %d\n", time.Now().Format("04:05.000"), string(rune(key)), keys[key], modKey)
 }
 
 func GetKey(key glfw.Key) bool {
 	return keys[key].Repeat || keys[key].Press
+}
+
+func GetKeyWithModKey(key glfw.Key, modKey glfw.ModifierKey) bool {
+	if mKey == modKey {
+		return keys[key].Repeat || keys[key].Press
+	}
+	return false
 }
 
 func GetKeyDown(key glfw.Key) bool {

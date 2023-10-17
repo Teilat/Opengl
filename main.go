@@ -12,6 +12,7 @@ import (
 	"opengl/input"
 	"opengl/object"
 	"opengl/shader"
+	"opengl/window"
 
 	"github.com/go-gl/gl/v4.6-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -22,7 +23,7 @@ var (
 	Width  = 800
 	Height = 600
 
-	fps = 75
+	Fps = 75
 )
 
 var (
@@ -105,18 +106,16 @@ var (
 func main() {
 	runtime.LockOSThread()
 
-	window := initGlfw()
+	win := window.InitGlfw(Width, Height, Fps, "Program", false, input.KeyCallback, input.CursorCallback)
 	defer glfw.Terminate()
 	program := initOpenGL()
 
 	gl.UseProgram(program)
 	gl.Enable(gl.DEPTH_TEST)
 	//gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
-	window.SetKeyCallback(input.KeyCallback)
-	window.SetCursorPosCallback(input.CursorCallback)
 
 	obj := object.NewObject(square, squareIndices, mgl32.Vec3{0, 0, 0}, "square.png")
-	cam := camera.NewCamera(program, "camera\x00", "projection\x00", 45, mgl32.Vec3{1, 1, 1}, Width, Height)
+	cam := camera.NewCamera(program, "camera\x00", "projection\x00", 45, mgl32.Vec3{1, 1, 1}, win.GetWidth(), win.GetHeight())
 
 	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, obj.Texture)
@@ -124,18 +123,23 @@ func main() {
 
 	vertexColorLocation := gl.GetUniformLocation(program, gl.Str("ourColor\x00"))
 
-	for !window.ShouldClose() {
+	for !win.ShouldClose() {
 		t := time.Now()
 
 		glfw.PollEvents()
+		if win.UpdateWindow() {
+			cam.UpdateWindow(win.GetWidth(), win.GetHeight())
+		}
 
 		gl.ClearColor(0.2, 0.3, 0.3, 1.0)
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
 		upd(program, vertexColorLocation, cam)
-		draw(obj, window, program)
+		draw(obj, program)
 
-		time.Sleep(time.Second/time.Duration(fps) - time.Since(t))
+		win.SwapBuffers()
+
+		time.Sleep(time.Second/time.Duration(Fps) - time.Since(t))
 	}
 	gl.DeleteProgram(program)
 }
@@ -151,7 +155,7 @@ func upd(program uint32, vertexColorLocation int32, cam *camera.Camera) {
 	cam.Update()
 }
 
-func draw(obj *object.Object, window *glfw.Window, program uint32) {
+func draw(obj *object.Object, program uint32) {
 	gl.UseProgram(program)
 
 	gl.BindTexture(gl.TEXTURE_2D, obj.Texture)
@@ -162,37 +166,6 @@ func draw(obj *object.Object, window *glfw.Window, program uint32) {
 	// не работает нормально наложение текстур
 	// gl.DrawElements(gl.TRIANGLES, int32(len(squareIndices)), gl.UNSIGNED_INT, nil)
 	gl.DrawArrays(gl.TRIANGLES, 0, int32(len(square)))
-
-	window.SwapBuffers()
-}
-
-// initGlfw initializes glfw and returns a Window to use.
-func initGlfw() *glfw.Window {
-	if err := glfw.Init(); err != nil {
-		panic(err)
-	}
-	glfw.WindowHint(glfw.Resizable, glfw.True)
-	glfw.WindowHint(glfw.ContextVersionMajor, 4)
-	glfw.WindowHint(glfw.ContextVersionMinor, 6)
-	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLAnyProfile)
-	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
-
-	monitor := glfw.GetMonitors()[1]
-	if monitor == nil {
-		monitor = glfw.GetPrimaryMonitor()
-	}
-
-	window, err := glfw.CreateWindow(Width, Height, "Program", nil, nil)
-	if err != nil {
-		panic(err)
-	}
-	window.MakeContextCurrent()
-	window.SetInputMode(glfw.CursorMode, glfw.CursorDisabled)
-	if glfw.RawMouseMotionSupported() {
-		window.SetInputMode(glfw.RawMouseMotion, glfw.True)
-	}
-
-	return window
 }
 
 // initOpenGL initializes OpenGL and returns an intiialized program.

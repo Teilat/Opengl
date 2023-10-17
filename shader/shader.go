@@ -8,6 +8,15 @@ import (
 	"time"
 )
 
+// COMPUTE_SHADER
+// FRAGMENT_SHADER
+// GEOMETRY_SHADER
+// MESH_SHADER_NV
+//// TASK_SHADER_NV
+// TESS_CONTROL_SHADER
+// TESS_EVALUATION_SHADER
+// VERTEX_SHADER
+
 func CompileShader(filename string, shaderType uint32) (uint32, error) {
 	fmt.Printf("compiling shader %s... ", filename)
 	t := time.Now()
