@@ -1,9 +1,11 @@
 package window
 
 import (
-	"github.com/go-gl/glfw/v3.3/glfw"
-	"opengl/input"
 	"time"
+
+	"opengl/input"
+
+	"github.com/go-gl/glfw/v3.3/glfw"
 )
 
 type Window struct {

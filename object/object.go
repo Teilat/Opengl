@@ -2,13 +2,15 @@ package object
 
 import (
 	"fmt"
-	"github.com/go-gl/gl/v4.6-core/gl"
-	"github.com/go-gl/mathgl/mgl32"
 	"image"
 	"image/draw"
 	"image/png"
 	"os"
 	"unsafe"
+
+	"github.com/go-gl/gl/v4.6-core/gl"
+	"github.com/go-gl/mathgl/mgl32"
+	_ "github.com/qmuntal/gltf"
 )
 
 type Object struct {

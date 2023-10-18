@@ -2,10 +2,11 @@ package shader
 
 import (
 	"fmt"
-	"github.com/go-gl/gl/v4.6-core/gl"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/go-gl/gl/v4.6-core/gl"
 )
 
 // COMPUTE_SHADER
