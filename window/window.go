@@ -40,7 +40,7 @@ func InitGlfw(width, height, refreshRate int, title string, fullscreen bool,
 	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
 	glfw.WindowHint(glfw.RefreshRate, refreshRate)
 
-	monitor = glfw.GetMonitors()[1]
+	monitor = glfw.GetMonitors()[0]
 	if monitor == nil {
 		monitor = glfw.GetPrimaryMonitor()
 	}
