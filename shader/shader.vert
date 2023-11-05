@@ -9,6 +9,6 @@ uniform mat4 model;
 
 out vec2 texturePos;
 void main() {
-	texturePos = vec2(texturePosition.x, 1.0-texturePosition.y);
+	texturePos = texturePosition;
 	gl_Position = projection * camera * model * vec4(vertexPosition, 1);
 }

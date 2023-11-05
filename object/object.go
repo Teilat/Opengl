@@ -17,38 +17,52 @@ import (
 
 type Object struct {
 	*gltf.Document
-	vertices []float32
+	vertices [][3]float32
 	Indices  []uint32
 	Vao      uint32
 	Texture  uint32
 	pos      mgl32.Vec3
 }
 
-func NewObject(vertices []float32, indices []uint32, pos mgl32.Vec3, texture string) *Object {
-	doc, _ := gltf.Open("./object/scene.gltf")
+func NewObject(pos mgl32.Vec3, texture string) *Object {
+	doc, _ := gltf.Open("./object/Open Cube/scene.gltf")
 	indId := doc.Meshes[0].Primitives[0].Indices
 	posId := doc.Meshes[0].Primitives[0].Attributes["POSITION"]
-	indices1, _ := modeler.ReadIndices(doc, doc.Accessors[*indId], []uint32{})
+	//texId := doc.Meshes[0].Primitives[0].Attributes["TEXCOORD_0"]
 	positions1, _ := modeler.ReadPosition(doc, doc.Accessors[posId], [][3]float32{})
-	fmt.Println(indices1, positions1)
+	indices1, _ := modeler.ReadIndices(doc, doc.Accessors[*indId], []uint32{})
+	//texture1, _ := modeler.ReadTextureCoord(doc, doc.Accessors[texId], [][2]float32{})
+
 	return &Object{
 		Document: doc,
-		vertices: vertices,
-		Indices:  indices,
-		Vao:      makeVAO(vertices, indices),
-		//Vao:     makeVAO2(positions1, indices1),
-		Texture: bindTexture(texture),
-		pos:     pos,
+		vertices: positions1,
+		Indices:  indices1,
+		Vao:      makeVAO2(positions1, indices1, nil),
+		Texture:  bindTexture(texture),
+		pos:      pos,
 	}
 }
 
-func makeVAO2(vertices [][3]float32, indices []uint32) uint32 {
+//func parseMesh(doc *gltf.Document) {
+//	meshes := make()
+//	for _, mesh := range doc.Meshes {
+//
+//	}
+//}
+
+func makeVAO2(vertices [][3]float32, indices []uint32, texture1 [][2]float32) uint32 {
 	var vertexArrayObject, vertexBufferObject, indexBufferObject uint32
 	stride := 5 * int32(unsafe.Sizeof(float32(0)))
+	if texture1 == nil {
+		texture1 = make([][2]float32, len(vertices))
+	}
+	if vertices[0][0] > 1 || vertices[0][1] > 1 || vertices[0][2] > 1 {
+		vertices = normalize(vertices)
+	}
 
 	vert := make([]float32, 0)
-	for _, vertex := range vertices {
-		vert = append(vert, vertex[0], vertex[1], vertex[2])
+	for i, vertex := range vertices {
+		vert = append(vert, vertex[0], vertex[1], vertex[2], texture1[i][0], texture1[i][1])
 	}
 
 	gl.GenVertexArrays(1, &vertexArrayObject)
@@ -79,6 +93,22 @@ func makeVAO2(vertices [][3]float32, indices []uint32) uint32 {
 	gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, 0)
 
 	return vertexArrayObject
+}
+
+func normalize(vertices [][3]float32) [][3]float32 {
+	maximum := float32(0)
+	res := make([][3]float32, len(vertices))
+	for _, vertice := range vertices {
+		if maximum < max(vertice[0], vertice[1], vertice[2]) {
+			maximum = max(vertice[0], vertice[1], vertice[2])
+		}
+	}
+	for i, vertice := range vertices {
+		res[i][0] = vertice[0] / maximum
+		res[i][1] = vertice[1] / maximum
+		res[i][2] = vertice[2] / maximum
+	}
+	return res
 }
 
 func (o *Object) GetPos() mgl32.Vec3 {
