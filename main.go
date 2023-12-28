@@ -115,7 +115,7 @@ func main() {
 	//gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
 
 	obj := object.NewObject(square, squareIndices, mgl32.Vec3{0, 0, 0}, "square.png")
-	cam := camera.NewCamera(program, "camera\x00", "projection\x00", 45, mgl32.Vec3{1, 1, 1}, win.GetWidth(), win.GetHeight())
+	cam := camera.NewCamera(program, 45, mgl32.Vec3{1, 1, 1}, win.GetWidth(), win.GetHeight())
 
 	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, obj.Texture)
@@ -128,7 +128,7 @@ func main() {
 
 		glfw.PollEvents()
 		if win.UpdateWindow() {
-			cam.UpdateWindow(win.GetWidth(), win.GetHeight())
+			cam.UpdateWindow(float32(win.GetWidth()), float32(win.GetHeight()))
 			gl.Viewport(0, 0, int32(win.GetWidth()), int32(win.GetHeight()))
 		}
 

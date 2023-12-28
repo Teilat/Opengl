@@ -175,7 +175,7 @@ func GetKeyUp(key glfw.Key) bool {
 	return keys[key].Release
 }
 
-func GetAxis(axis Axis) float64 {
+func GetDefaultAxis(axis Axis) float64 {
 	switch axis {
 	case Horizontal:
 		return support.BoolToFloat(GetKey(glfw.KeyA) || GetKey(glfw.KeyLeft))*-1 +
@@ -190,4 +190,9 @@ func GetAxis(axis Axis) float64 {
 	default:
 		return 0
 	}
+}
+
+func GetAxis(upKey, downKey glfw.Key) float64 {
+	return support.BoolToFloat(GetKey(downKey))*-1 +
+		support.BoolToFloat(GetKey(upKey))*1
 }
