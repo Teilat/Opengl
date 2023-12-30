@@ -2,17 +2,14 @@ package main
 
 import (
 	"C"
-	"fmt"
-	"log"
 	"math"
-	"opengl/text"
+	"opengl/opengl"
 	"runtime"
 	"time"
 
 	"opengl/camera"
 	"opengl/input"
 	"opengl/object"
-	"opengl/shader"
 	"opengl/window"
 
 	"github.com/go-gl/gl/v4.6-core/gl"
@@ -28,16 +25,6 @@ var (
 )
 
 var (
-	squareInd = []float32{
-		-0.5, -0.5, 0.5, 0.0, 0.0, // 0 левый нижний ближний
-		0.5, -0.5, 0.5, 1.0, 0.0, // 1 правый нижний ближний
-		0.5, 0.5, 0.5, 1.0, 1.0, // 2 правый верхний ближний
-		-0.5, 0.5, 0.5, 0.0, 1.0, // 3 левый верхний ближний
-		-0.5, -0.5, -0.5, 1.0, 0.0, // 4 левый нижний дальний
-		0.5, -0.5, -0.5, 0.0, 0.0, // 5 правый нижний дальний
-		0.5, 0.5, -0.5, 0.0, 1.0, // 6 првавый верхний дальний
-		-0.5, 0.5, -0.5, 1.0, 1.0, // 7 левый верхний дальний
-	}
 	square = []float32{
 		-0.5, -0.5, -0.5, 0.0, 0.0,
 		0.5, -0.5, -0.5, 1.0, 0.0,
@@ -81,7 +68,6 @@ var (
 		-0.5, 0.5, 0.5, 0.0, 0.0,
 		-0.5, 0.5, -0.5, 0.0, 1.0,
 	}
-
 	squareIndices = []uint32{
 		// front
 		3, 1, 2,
@@ -109,7 +95,7 @@ func main() {
 
 	win := window.InitGlfw(Width, Height, Fps, "Program", false, input.KeyCallback, input.CursorCallback, window.OnResize)
 	defer glfw.Terminate()
-	program := initOpenGL()
+	program := opengl.InitOpenGL()
 
 	gl.UseProgram(program)
 	gl.Enable(gl.DEPTH_TEST)
@@ -124,6 +110,7 @@ func main() {
 
 	vertexColorLocation := gl.GetUniformLocation(program, gl.Str("ourColor\x00"))
 
+	gl.ClearColor(0.2, 0.3, 0.3, 1.0)
 	for !win.ShouldClose() {
 		t := time.Now()
 
@@ -133,7 +120,6 @@ func main() {
 			gl.Viewport(0, 0, int32(win.GetWidth()), int32(win.GetHeight()))
 		}
 
-		gl.ClearColor(0.2, 0.3, 0.3, 1.0)
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
 		upd(program, vertexColorLocation, cam)
@@ -165,37 +151,5 @@ func draw(obj *object.Object, program uint32) {
 
 	model := mgl32.Translate3D(obj.GetPos().Elem())
 	gl.UniformMatrix4fv(gl.GetUniformLocation(program, gl.Str("model\x00")), 1, false, &model[0])
-	// не работает нормально наложение текстур
-	// gl.DrawElements(gl.TRIANGLES, int32(len(squareIndices)), gl.UNSIGNED_INT, nil)
 	gl.DrawArrays(gl.TRIANGLES, 0, int32(len(square)))
-}
-
-// initOpenGL initializes OpenGL and returns an intiialized program.
-func initOpenGL() uint32 {
-	if err := gl.Init(); err != nil {
-		panic(err)
-	}
-	log.Println("OpenGL version", gl.GoStr(gl.GetString(gl.VERSION)))
-
-	fragmentShader, err := shader.CompileShader("shader.frag", gl.FRAGMENT_SHADER)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	vertexShader, err := shader.CompileShader("shader.vert", gl.VERTEX_SHADER)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	program := gl.CreateProgram()
-
-	gl.AttachShader(program, fragmentShader)
-	gl.AttachShader(program, vertexShader)
-
-	gl.LinkProgram(program)
-	gl.ValidateProgram(program)
-
-	gl.DeleteShader(fragmentShader)
-	gl.DeleteShader(vertexShader)
-	return program
 }
