@@ -22,7 +22,7 @@ func CompileShader(filename string, shaderType uint32) (uint32, error) {
 	fmt.Printf("compiling shader %s... ", filename)
 	t := time.Now()
 
-	data, err := os.ReadFile("./shader/" + filename)
+	data, err := os.ReadFile("./opengl/shader/" + filename)
 	if err != nil {
 		return 0, err
 	}

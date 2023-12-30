@@ -9,7 +9,7 @@ var (
 	posYy = 0.0
 )
 
-func CursorCallback(window *glfw.Window, posX float64, posY float64) {
+func CursorCallback(_ *glfw.Window, posX float64, posY float64) {
 	posXx = posX
 	posYy = -posY
 }

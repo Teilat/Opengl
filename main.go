@@ -4,12 +4,12 @@ import (
 	"C"
 	"math"
 	"opengl/opengl"
+	"opengl/opengl/camera"
+	"opengl/opengl/object"
+	input2 "opengl/window/input"
 	"runtime"
 	"time"
 
-	"opengl/camera"
-	"opengl/input"
-	"opengl/object"
 	"opengl/window"
 
 	"github.com/go-gl/gl/v4.6-core/gl"
@@ -93,7 +93,7 @@ var (
 func main() {
 	runtime.LockOSThread()
 
-	win := window.InitGlfw(Width, Height, Fps, "Program", false, input.KeyCallback, input.CursorCallback, window.OnResize)
+	win := window.InitGlfw(Width, Height, Fps, "Program", false, input2.KeyCallback, input2.CursorCallback, window.OnResize)
 	defer glfw.Terminate()
 	program := opengl.InitOpenGL()
 
