@@ -6,7 +6,7 @@ import (
 	"opengl/opengl"
 	"opengl/opengl/camera"
 	"opengl/opengl/object"
-	input2 "opengl/window/input"
+	"opengl/window/input"
 	"runtime"
 	"time"
 
@@ -92,8 +92,8 @@ var (
 
 func main() {
 	runtime.LockOSThread()
-
-	win := window.InitGlfw(Width, Height, Fps, "Program", false, input2.KeyCallback, input2.CursorCallback, window.OnResize)
+	var win *window.Window
+	win = window.InitGlfw(Width, Height, Fps, "Program", false, input.KeyCallback, input.CursorCallback, window.OnResize)
 	defer glfw.Terminate()
 	program := opengl.InitOpenGL()
 
@@ -116,14 +116,17 @@ func main() {
 
 		glfw.PollEvents()
 		if win.OnModeChange() {
-			cam.UpdateWindow(float32(win.GetWidth()), float32(win.GetHeight()))
-			gl.Viewport(0, 0, int32(win.GetWidth()), int32(win.GetHeight()))
+			width, height := win.GetWidth(), win.GetHeight()
+			cam.UpdateWindow(float32(width), float32(height))
+			gl.Viewport(0, 0, int32(width), int32(height))
+			win.UpdateTextResolution(width, height)
 		}
 
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
 		upd(program, vertexColorLocation, cam)
 		draw(obj, program)
+		win.DrawText()
 
 		win.SwapBuffers()
 

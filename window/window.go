@@ -1,7 +1,10 @@
 package window
 
 import (
+	"fmt"
+	"github.com/nullboundary/glfont"
 	"opengl/window/input"
+	"opengl/window/text"
 	"time"
 
 	"github.com/go-gl/gl/v4.6-core/gl"
@@ -14,6 +17,7 @@ type Window struct {
 	title          string
 	FullScreenLock time.Time
 	fullScreen     bool
+	font           *glfont.Font
 
 	posX        int
 	posY        int
@@ -76,7 +80,18 @@ func InitGlfw(width, height, refreshRate int, title string, fullscreen bool,
 	window.SetCursorPosCallback(cursorCallback)
 	window.SetSizeCallback(resizeCallback)
 
-	return &Window{Window: window, height: height, width: width, refreshRate: refreshRate, title: title, monitor: monitor, FullScreenLock: time.Now()}
+	font := text.Init(width, height)
+
+	return &Window{
+		Window:         window,
+		monitor:        monitor,
+		title:          title,
+		FullScreenLock: time.Now(),
+		font:           font,
+		width:          width,
+		height:         height,
+		refreshRate:    refreshRate,
+	}
 }
 
 func (w *Window) GetWidth() int {
@@ -112,4 +127,16 @@ func (w *Window) switchWindowMode() {
 		w.SetMonitor(w.monitor, 0, 0, vMode.Width, vMode.Height, vMode.RefreshRate)
 	}
 	w.fullScreen = !w.fullScreen
+}
+
+func (w *Window) DrawText() {
+	// TODO передавать указатели на строки
+	err := w.font.Printf(0, 50, 0.5, time.Now().Format("15:04:05"))
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
+func (w *Window) UpdateTextResolution(width, height int) {
+	w.font.UpdateResolution(width, height)
 }
