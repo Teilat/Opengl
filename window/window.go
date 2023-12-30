@@ -5,6 +5,7 @@ import (
 
 	"opengl/input"
 
+	"github.com/go-gl/gl/v4.6-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 )
 
@@ -22,10 +23,21 @@ type Window struct {
 	refreshRate int
 }
 
+func OnResize(_ *glfw.Window, width int, height int) {
+	if width < 1 {
+		width = 1
+	}
+	if height < 1 {
+		height = 1
+	}
+	gl.Viewport(0, 0, int32(width), int32(height))
+}
+
 // InitGlfw initializes glfw and returns a Window to use.
 func InitGlfw(width, height, refreshRate int, title string, fullscreen bool,
 	keyCallback func(w *glfw.Window, key glfw.Key, _ int, action glfw.Action, modKey glfw.ModifierKey),
 	cursorCallback func(window *glfw.Window, posX float64, posY float64),
+	resizeCallback func(window *glfw.Window, width int, height int),
 ) *Window {
 	var monitor *glfw.Monitor
 	var window *glfw.Window
@@ -63,6 +75,7 @@ func InitGlfw(width, height, refreshRate int, title string, fullscreen bool,
 
 	window.SetKeyCallback(keyCallback)
 	window.SetCursorPosCallback(cursorCallback)
+	window.SetSizeCallback(resizeCallback)
 
 	return &Window{Window: window, height: height, width: width, refreshRate: refreshRate, title: title, monitor: monitor, FullScreenLock: time.Now()}
 }
@@ -81,7 +94,7 @@ func (w *Window) GetHeight() int {
 	return w.height
 }
 
-func (w *Window) UpdateWindow() bool {
+func (w *Window) OnModeChange() bool { //TODO перенести логику проверки в input
 	if input.GetKeyPressWithModKey(glfw.KeyEnter, glfw.ModAlt) && time.Since(w.FullScreenLock) > time.Millisecond*250 {
 		w.FullScreenLock = time.Now()
 		w.switchWindowMode()

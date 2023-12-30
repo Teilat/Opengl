@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"opengl/text"
 	"runtime"
 	"time"
 
@@ -106,7 +107,7 @@ var (
 func main() {
 	runtime.LockOSThread()
 
-	win := window.InitGlfw(Width, Height, Fps, "Program", false, input.KeyCallback, input.CursorCallback)
+	win := window.InitGlfw(Width, Height, Fps, "Program", false, input.KeyCallback, input.CursorCallback, window.OnResize)
 	defer glfw.Terminate()
 	program := initOpenGL()
 
@@ -127,7 +128,7 @@ func main() {
 		t := time.Now()
 
 		glfw.PollEvents()
-		if win.UpdateWindow() {
+		if win.OnModeChange() {
 			cam.UpdateWindow(float32(win.GetWidth()), float32(win.GetHeight()))
 			gl.Viewport(0, 0, int32(win.GetWidth()), int32(win.GetHeight()))
 		}
