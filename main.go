@@ -2,11 +2,13 @@ package main
 
 import (
 	"C"
+	"fmt"
 	"math"
 	"opengl/opengl"
 	"opengl/opengl/camera"
 	"opengl/opengl/object"
 	"opengl/window/input"
+	"opengl/window/text"
 	"runtime"
 	"time"
 
@@ -92,8 +94,7 @@ var (
 
 func main() {
 	runtime.LockOSThread()
-	var win *window.Window
-	win = window.InitGlfw(Width, Height, Fps, "Program", false, input.KeyCallback, input.CursorCallback, window.OnResize)
+	win := window.InitGlfw(Width, Height, Fps, "Program", false, input.KeyCallback, input.CursorCallback, window.OnResize)
 	defer glfw.Terminate()
 	program := opengl.InitOpenGL()
 
@@ -111,6 +112,8 @@ func main() {
 	vertexColorLocation := gl.GetUniformLocation(program, gl.Str("ourColor\x00"))
 
 	gl.ClearColor(0.2, 0.3, 0.3, 1.0)
+
+	str := ""
 	for !win.ShouldClose() {
 		t := time.Now()
 
@@ -119,14 +122,20 @@ func main() {
 			width, height := win.GetWidth(), win.GetHeight()
 			cam.UpdateWindow(float32(width), float32(height))
 			gl.Viewport(0, 0, int32(width), int32(height))
-			win.UpdateTextResolution(width, height)
+			win.Text.UpdateResolution(width, height)
 		}
 
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-		upd(program, vertexColorLocation, cam)
+		upd(program, vertexColorLocation, cam, &str)
 		draw(obj, program)
-		win.DrawText()
+		camPos := fmt.Sprintf("camera pos:%v", cam.GetPos())
+		lookAtPos := fmt.Sprintf("look at pos:%v", cam.GetLookAt())
+		win.Text.DrawText([]text.Item{
+			{Text: &str, PosX: 0, PosY: 16, Scale: 0.5},
+			{Text: &camPos, PosX: 0, PosY: 32, Scale: 0.5},
+			{Text: &lookAtPos, PosX: 0, PosY: 48, Scale: 0.5},
+		})
 
 		win.SwapBuffers()
 
@@ -135,14 +144,14 @@ func main() {
 	gl.DeleteProgram(program)
 }
 
-func upd(program uint32, vertexColorLocation int32, cam *camera.Camera) {
+func upd(program uint32, vertexColorLocation int32, cam *camera.Camera, s *string) {
 	gl.UseProgram(program)
 	t := glfw.GetTime()
 	redValue := math.Abs(math.Cos(t))
 	greenValue := math.Abs(math.Cos(t + 1))
 	blueValue := math.Abs(math.Cos(t + 2))
 	gl.Uniform4f(vertexColorLocation, float32(redValue), float32(greenValue), float32(blueValue), 1.0)
-
+	*s = fmt.Sprintf("%f,%f,%f", float32(redValue), float32(greenValue), float32(blueValue))
 	cam.Update()
 }
 

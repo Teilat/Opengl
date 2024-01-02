@@ -1,8 +1,6 @@
 package window
 
 import (
-	"fmt"
-	"github.com/nullboundary/glfont"
 	"opengl/window/input"
 	"opengl/window/text"
 	"time"
@@ -13,17 +11,18 @@ import (
 
 type Window struct {
 	*glfw.Window
-	monitor        *glfw.Monitor
-	title          string
-	FullScreenLock time.Time
-	fullScreen     bool
-	font           *glfont.Font
-
+	title       string
 	posX        int
 	posY        int
 	width       int
 	height      int
 	refreshRate int
+
+	monitor        *glfw.Monitor
+	fullScreenLock time.Time
+	fullScreen     bool
+
+	Text *text.Text
 }
 
 func OnResize(_ *glfw.Window, width int, height int) {
@@ -80,14 +79,12 @@ func InitGlfw(width, height, refreshRate int, title string, fullscreen bool,
 	window.SetCursorPosCallback(cursorCallback)
 	window.SetSizeCallback(resizeCallback)
 
-	font := text.Init(width, height)
-
 	return &Window{
 		Window:         window,
+		Text:           text.Init(32, width, height),
 		monitor:        monitor,
 		title:          title,
-		FullScreenLock: time.Now(),
-		font:           font,
+		fullScreenLock: time.Now(),
 		width:          width,
 		height:         height,
 		refreshRate:    refreshRate,
@@ -108,11 +105,13 @@ func (w *Window) GetHeight() int {
 	return w.height
 }
 
-func (w *Window) OnModeChange() bool { //TODO перенести логику проверки в input
-	if input.GetKeyPressWithModKey(glfw.KeyEnter, glfw.ModAlt) && time.Since(w.FullScreenLock) > time.Millisecond*250 {
-		w.FullScreenLock = time.Now()
-		w.switchWindowMode()
-		return true
+func (w *Window) OnModeChange() bool {
+	if input.GetKeyPressWithModKey(glfw.KeyEnter, glfw.ModAlt) {
+		if time.Since(w.fullScreenLock) > time.Millisecond*250 {
+			w.fullScreenLock = time.Now()
+			w.switchWindowMode()
+			return true
+		}
 	}
 	return false
 }
@@ -127,16 +126,4 @@ func (w *Window) switchWindowMode() {
 		w.SetMonitor(w.monitor, 0, 0, vMode.Width, vMode.Height, vMode.RefreshRate)
 	}
 	w.fullScreen = !w.fullScreen
-}
-
-func (w *Window) DrawText() {
-	// TODO передавать указатели на строки
-	err := w.font.Printf(0, 50, 0.5, time.Now().Format("15:04:05"))
-	if err != nil {
-		fmt.Println(err)
-	}
-}
-
-func (w *Window) UpdateTextResolution(width, height int) {
-	w.font.UpdateResolution(width, height)
 }
