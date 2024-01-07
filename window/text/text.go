@@ -26,8 +26,10 @@ func Init(scale, windowWidth, windowHeight int) *Text {
 }
 
 func (t Text) DrawText(strings []Item) {
-	// TODO передавать массив структур со строуками, позиуиями, цветами и тд...
 	for _, item := range strings {
+		if item.Text == nil {
+			continue
+		}
 		err := t.Printf(item.PosX, item.PosY, item.Scale, *item.Text)
 		if err != nil {
 			fmt.Println(err)

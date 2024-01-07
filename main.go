@@ -118,17 +118,13 @@ func main() {
 		t := time.Now()
 
 		glfw.PollEvents()
-		if win.OnModeChange() {
-			width, height := win.GetWidth(), win.GetHeight()
-			cam.UpdateWindow(float32(width), float32(height))
-			gl.Viewport(0, 0, int32(width), int32(height))
-			win.Text.UpdateResolution(width, height)
-		}
+		win.OnWindowModeChange(cam)
 
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
 		upd(program, vertexColorLocation, cam, &str)
 		draw(obj, program)
+
 		camPos := fmt.Sprintf("camera pos:%v", cam.GetPos())
 		lookAtPos := fmt.Sprintf("look at pos:%v", cam.GetLookAt())
 		win.Text.DrawText([]text.Item{

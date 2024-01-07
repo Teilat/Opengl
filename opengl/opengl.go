@@ -36,18 +36,8 @@ func InitOpenGL() uint32 {
 		if err != nil {
 			fmt.Println(err)
 		}
-		//retryCount := 0
-		//for err != nil || retryCount > 3 {
-		//	err = nil
-		//	compiledShader, err = shader.CompileShader(s.File, s.Type)
-		//	if err != nil {
-		//		fmt.Println(err)
-		//	}
-		//	retryCount++
-		//}
 		gl.AttachShader(program, compiledShader)
 		s.ObjectId = compiledShader
-		//retryCount = 0
 	}
 
 	gl.LinkProgram(program)

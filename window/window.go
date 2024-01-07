@@ -1,6 +1,7 @@
 package window
 
 import (
+	"opengl/opengl/camera"
 	"opengl/window/input"
 	"opengl/window/text"
 	"time"
@@ -105,15 +106,18 @@ func (w *Window) GetHeight() int {
 	return w.height
 }
 
-func (w *Window) OnModeChange() bool {
+func (w *Window) OnWindowModeChange(cam *camera.Camera) {
 	if input.GetKeyPressWithModKey(glfw.KeyEnter, glfw.ModAlt) {
 		if time.Since(w.fullScreenLock) > time.Millisecond*250 {
 			w.fullScreenLock = time.Now()
 			w.switchWindowMode()
-			return true
+			// post update
+			width, height := w.GetWidth(), w.GetHeight()
+			cam.UpdateWindow(float32(width), float32(height))
+			gl.Viewport(0, 0, int32(width), int32(height))
+			w.Text.UpdateResolution(width, height)
 		}
 	}
-	return false
 }
 
 func (w *Window) switchWindowMode() {
