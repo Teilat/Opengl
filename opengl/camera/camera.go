@@ -57,8 +57,7 @@ func (c *Camera) Update() {
 	c.calcLookAt()
 	c.calcMovement()
 
-	// для тестов
-	c.upd()
+	c.updFov()
 
 	gl.UniformMatrix4fv(c.ShaderCameraLocation, 1, false, c.getCameraMatrix4fv())
 }
@@ -81,7 +80,7 @@ func (c *Camera) calcLookAt() {
 	}.Normalize()
 }
 
-func (c *Camera) upd() {
+func (c *Camera) updFov() {
 	fov := input.GetAxis(glfw.KeyO, glfw.KeyP)
 	if c.fov >= 120 && fov > 0 {
 		return

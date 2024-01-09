@@ -114,6 +114,8 @@ func main() {
 	gl.ClearColor(0.2, 0.3, 0.3, 1.0)
 
 	str := ""
+	gl.Uniform4f(vertexColorLocation, float32(1), float32(1), float32(1), 1.0)
+
 	for !win.ShouldClose() {
 		t := time.Now()
 

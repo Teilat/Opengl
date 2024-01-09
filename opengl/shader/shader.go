@@ -26,10 +26,11 @@ func CompileShader(filename string, shaderType uint32) (uint32, error) {
 	if err != nil {
 		return 0, err
 	}
-	csources, free := gl.Strs(string(data))
+	// shaderLen := int32(len(string(data) + "\x00"))
+	cSources, free := gl.Strs(string(data) + "\x00")
 
 	shader := gl.CreateShader(shaderType)
-	gl.ShaderSource(shader, 1, csources, nil)
+	gl.ShaderSource(shader, 1, cSources, nil)
 	free()
 	gl.CompileShader(shader)
 
