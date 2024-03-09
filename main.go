@@ -8,7 +8,6 @@ import (
 	"opengl/opengl/camera"
 	"opengl/opengl/object"
 	"opengl/window/input"
-	"opengl/window/text"
 	"runtime"
 	"time"
 
@@ -127,13 +126,13 @@ func main() {
 		upd(program, vertexColorLocation, cam, &str)
 		draw(obj, program)
 
-		camPos := fmt.Sprintf("camera pos:%v", cam.GetPos())
-		lookAtPos := fmt.Sprintf("look at pos:%v", cam.GetLookAt())
-		win.Text.DrawText([]text.Item{
-			{Text: &str, PosX: 0, PosY: 16, Scale: 0.5},
-			{Text: &camPos, PosX: 0, PosY: 32, Scale: 0.5},
-			{Text: &lookAtPos, PosX: 0, PosY: 48, Scale: 0.5},
-		})
+		//camPos := fmt.Sprintf("camera pos:%v", cam.GetPos())
+		//lookAtPos := fmt.Sprintf("look at pos:%v", cam.GetLookAt())
+		//win.Text.DrawText([]text.Item{
+		//	{Text: &str, PosX: 0, PosY: 16, Scale: 0.5},
+		//	{Text: &camPos, PosX: 0, PosY: 32, Scale: 0.5},
+		//	{Text: &lookAtPos, PosX: 0, PosY: 48, Scale: 0.5},
+		//})
 
 		win.SwapBuffers()
 

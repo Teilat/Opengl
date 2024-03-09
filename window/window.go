@@ -81,8 +81,8 @@ func InitGlfw(width, height, refreshRate int, title string, fullscreen bool,
 	window.SetSizeCallback(resizeCallback)
 
 	return &Window{
-		Window:         window,
-		Text:           text.Init(32, width, height),
+		Window: window,
+		//Text:           text.Init(32, width, height),
 		monitor:        monitor,
 		title:          title,
 		fullScreenLock: time.Now(),
@@ -115,7 +115,7 @@ func (w *Window) OnWindowModeChange(cam *camera.Camera) {
 			width, height := w.GetWidth(), w.GetHeight()
 			cam.UpdateWindow(float32(width), float32(height))
 			gl.Viewport(0, 0, int32(width), int32(height))
-			w.Text.UpdateResolution(width, height)
+			//w.Text.UpdateResolution(width, height)
 		}
 	}
 }
