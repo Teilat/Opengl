@@ -26,6 +26,16 @@ var (
 )
 
 var (
+	squareInd = []float32{
+		-0.5, -0.5, 0.5, 0.0, 0.0, // 0 левый нижний ближний
+		0.5, -0.5, 0.5, 1.0, 0.0, // 1 правый нижний ближний
+		0.5, 0.5, 0.5, 1.0, 1.0, // 2 правый верхний ближний
+		-0.5, 0.5, 0.5, 0.0, 1.0, // 3 левый верхний ближний
+		-0.5, -0.5, -0.5, 1.0, 0.0, // 4 левый нижний дальний
+		0.5, -0.5, -0.5, 0.0, 0.0, // 5 правый нижний дальний
+		0.5, 0.5, -0.5, 0.0, 1.0, // 6 првавый верхний дальний
+		-0.5, 0.5, -0.5, 1.0, 1.0, // 7 левый верхний дальний
+	}
 	square = []float32{
 		-0.5, -0.5, -0.5, 0.0, 0.0,
 		0.5, -0.5, -0.5, 1.0, 0.0,
@@ -69,6 +79,7 @@ var (
 		-0.5, 0.5, 0.5, 0.0, 0.0,
 		-0.5, 0.5, -0.5, 0.0, 1.0,
 	}
+
 	squareIndices = []uint32{
 		// front
 		3, 1, 2,
@@ -160,5 +171,7 @@ func draw(obj *object.Object, program uint32) {
 
 	model := mgl32.Translate3D(obj.GetPos().Elem())
 	gl.UniformMatrix4fv(gl.GetUniformLocation(program, gl.Str("model\x00")), 1, false, &model[0])
+	// не работает нормально наложение текстур
+	// gl.DrawElements(gl.TRIANGLES, int32(len(squareIndices)), gl.UNSIGNED_INT, nil)
 	gl.DrawArrays(gl.TRIANGLES, 0, int32(len(square)))
 }

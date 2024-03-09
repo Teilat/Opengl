@@ -2,6 +2,7 @@ package object
 
 import (
 	"fmt"
+	"github.com/qmuntal/gltf/modeler"
 	"image"
 	"image/draw"
 	"image/png"
@@ -10,24 +11,104 @@ import (
 
 	"github.com/go-gl/gl/v4.6-core/gl"
 	"github.com/go-gl/mathgl/mgl32"
+	"github.com/qmuntal/gltf"
+	_ "github.com/qmuntal/gltf/modeler"
 )
 
 type Object struct {
-	vertices []float32
+	*gltf.Document
+	vertices [][3]float32
 	Indices  []uint32
 	Vao      uint32
 	Texture  uint32
 	pos      mgl32.Vec3
 }
 
-func NewObject(vertices []float32, indices []uint32, pos mgl32.Vec3, texture string) *Object {
+func NewObject(pos mgl32.Vec3, texture string) *Object {
+	doc, _ := gltf.Open("./object/Open Cube/scene.gltf")
+	indId := doc.Meshes[0].Primitives[0].Indices
+	posId := doc.Meshes[0].Primitives[0].Attributes["POSITION"]
+	//texId := doc.Meshes[0].Primitives[0].Attributes["TEXCOORD_0"]
+	positions1, _ := modeler.ReadPosition(doc, doc.Accessors[posId], [][3]float32{})
+	indices1, _ := modeler.ReadIndices(doc, doc.Accessors[*indId], []uint32{})
+	//texture1, _ := modeler.ReadTextureCoord(doc, doc.Accessors[texId], [][2]float32{})
+
 	return &Object{
-		vertices: vertices,
-		Indices:  indices,
-		Vao:      makeVAO(vertices, indices),
+		Document: doc,
+		vertices: positions1,
+		Indices:  indices1,
+		Vao:      makeVAO2(positions1, indices1, nil),
 		Texture:  bindTexture(texture),
 		pos:      pos,
 	}
+}
+
+//func parseMesh(doc *gltf.Document) {
+//	meshes := make()
+//	for _, mesh := range doc.Meshes {
+//
+//	}
+//}
+
+func makeVAO2(vertices [][3]float32, indices []uint32, texture1 [][2]float32) uint32 {
+	var vertexArrayObject, vertexBufferObject, indexBufferObject uint32
+	stride := 5 * int32(unsafe.Sizeof(float32(0)))
+	if texture1 == nil {
+		texture1 = make([][2]float32, len(vertices))
+	}
+	if vertices[0][0] > 1 || vertices[0][1] > 1 || vertices[0][2] > 1 {
+		vertices = normalize(vertices)
+	}
+
+	vert := make([]float32, 0)
+	for i, vertex := range vertices {
+		vert = append(vert, vertex[0], vertex[1], vertex[2], texture1[i][0], texture1[i][1])
+	}
+
+	gl.GenVertexArrays(1, &vertexArrayObject)
+	gl.GenBuffers(1, &vertexBufferObject)
+	gl.GenBuffers(1, &indexBufferObject)
+
+	gl.BindVertexArray(vertexArrayObject)
+
+	// привязываем буфер к массиву вертексов
+	gl.BindBuffer(gl.ARRAY_BUFFER, vertexBufferObject)
+	// сохраняем дангые в созданый буффер с определенным размером в битах
+	gl.BufferData(gl.ARRAY_BUFFER, len(vert)*int(unsafe.Sizeof(float32(0))), gl.Ptr(vert), gl.STATIC_DRAW)
+	// создаем указатель для использования данных в шейдере
+	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, stride, nil)
+	gl.EnableVertexAttribArray(0)
+	// создаем указатель, но уже с офсетом в битах
+	gl.VertexAttribPointerWithOffset(1, 2, gl.FLOAT, false, stride, uintptr(3*int(unsafe.Sizeof(float32(0)))))
+	gl.EnableVertexAttribArray(1)
+
+	// создаем буфер индексов к массиву вертексов
+	// тк это именно буфер индексов, делать указатель для шейдера ему не нужно
+	gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBufferObject)
+	// сохраняем дангые в созданый буффер с определенным размером в битах
+	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, len(indices)*int(unsafe.Sizeof(uint32(0))), gl.Ptr(indices), gl.STATIC_DRAW)
+
+	gl.BindVertexArray(0)
+	gl.BindBuffer(gl.ARRAY_BUFFER, 0)
+	gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, 0)
+
+	return vertexArrayObject
+}
+
+func normalize(vertices [][3]float32) [][3]float32 {
+	maximum := float32(0)
+	res := make([][3]float32, len(vertices))
+	for _, vertice := range vertices {
+		if maximum < max(vertice[0], vertice[1], vertice[2]) {
+			maximum = max(vertice[0], vertice[1], vertice[2])
+		}
+	}
+	for i, vertice := range vertices {
+		res[i][0] = vertice[0] / maximum
+		res[i][1] = vertice[1] / maximum
+		res[i][2] = vertice[2] / maximum
+	}
+	return res
 }
 
 func (o *Object) GetPos() mgl32.Vec3 {
