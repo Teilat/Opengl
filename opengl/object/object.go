@@ -25,7 +25,7 @@ type Object struct {
 }
 
 func NewObject(pos mgl32.Vec3, texture string) *Object {
-	doc, _ := gltf.Open("./object/Open Cube/scene.gltf")
+	doc, _ := gltf.Open("./opengl/object/Open Cube/scene.gltf")
 	indId := doc.Meshes[0].Primitives[0].Indices
 	posId := doc.Meshes[0].Primitives[0].Attributes["POSITION"]
 	//texId := doc.Meshes[0].Primitives[0].Attributes["TEXCOORD_0"]

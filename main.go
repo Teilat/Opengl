@@ -25,83 +25,6 @@ var (
 	Fps = 75
 )
 
-var (
-	squareInd = []float32{
-		-0.5, -0.5, 0.5, 0.0, 0.0, // 0 левый нижний ближний
-		0.5, -0.5, 0.5, 1.0, 0.0, // 1 правый нижний ближний
-		0.5, 0.5, 0.5, 1.0, 1.0, // 2 правый верхний ближний
-		-0.5, 0.5, 0.5, 0.0, 1.0, // 3 левый верхний ближний
-		-0.5, -0.5, -0.5, 1.0, 0.0, // 4 левый нижний дальний
-		0.5, -0.5, -0.5, 0.0, 0.0, // 5 правый нижний дальний
-		0.5, 0.5, -0.5, 0.0, 1.0, // 6 првавый верхний дальний
-		-0.5, 0.5, -0.5, 1.0, 1.0, // 7 левый верхний дальний
-	}
-	square = []float32{
-		-0.5, -0.5, -0.5, 0.0, 0.0,
-		0.5, -0.5, -0.5, 1.0, 0.0,
-		0.5, 0.5, -0.5, 1.0, 1.0,
-		0.5, 0.5, -0.5, 1.0, 1.0,
-		-0.5, 0.5, -0.5, 0.0, 1.0,
-		-0.5, -0.5, -0.5, 0.0, 0.0,
-
-		-0.5, -0.5, 0.5, 0.0, 0.0,
-		0.5, -0.5, 0.5, 1.0, 0.0,
-		0.5, 0.5, 0.5, 1.0, 1.0,
-		0.5, 0.5, 0.5, 1.0, 1.0,
-		-0.5, 0.5, 0.5, 0.0, 1.0,
-		-0.5, -0.5, 0.5, 0.0, 0.0,
-
-		-0.5, 0.5, 0.5, 1.0, 0.0,
-		-0.5, 0.5, -0.5, 1.0, 1.0,
-		-0.5, -0.5, -0.5, 0.0, 1.0,
-		-0.5, -0.5, -0.5, 0.0, 1.0,
-		-0.5, -0.5, 0.5, 0.0, 0.0,
-		-0.5, 0.5, 0.5, 1.0, 0.0,
-
-		0.5, 0.5, 0.5, 1.0, 0.0,
-		0.5, 0.5, -0.5, 1.0, 1.0,
-		0.5, -0.5, -0.5, 0.0, 1.0,
-		0.5, -0.5, -0.5, 0.0, 1.0,
-		0.5, -0.5, 0.5, 0.0, 0.0,
-		0.5, 0.5, 0.5, 1.0, 0.0,
-
-		-0.5, -0.5, -0.5, 0.0, 1.0,
-		0.5, -0.5, -0.5, 1.0, 1.0,
-		0.5, -0.5, 0.5, 1.0, 0.0,
-		0.5, -0.5, 0.5, 1.0, 0.0,
-		-0.5, -0.5, 0.5, 0.0, 0.0,
-		-0.5, -0.5, -0.5, 0.0, 1.0,
-
-		-0.5, 0.5, -0.5, 0.0, 1.0,
-		0.5, 0.5, -0.5, 1.0, 1.0,
-		0.5, 0.5, 0.5, 1.0, 0.0,
-		0.5, 0.5, 0.5, 1.0, 0.0,
-		-0.5, 0.5, 0.5, 0.0, 0.0,
-		-0.5, 0.5, -0.5, 0.0, 1.0,
-	}
-
-	squareIndices = []uint32{
-		// front
-		3, 1, 2,
-		3, 0, 1,
-		// back
-		6, 5, 4,
-		6, 4, 7,
-		//bottom
-		0, 1, 5,
-		0, 4, 5,
-		// top
-		2, 3, 7,
-		2, 6, 7,
-		// right
-		2, 5, 1,
-		2, 5, 6,
-		// left
-		0, 7, 4,
-		0, 7, 3,
-	}
-)
-
 func main() {
 	runtime.LockOSThread()
 	win := window.InitGlfw(Width, Height, Fps, "Program", false, input.KeyCallback, input.CursorCallback, window.OnResize)
@@ -112,7 +35,7 @@ func main() {
 	gl.Enable(gl.DEPTH_TEST)
 	//gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
 
-	obj := object.NewObject(square, squareIndices, mgl32.Vec3{0, 0, 0}, "square.png")
+	obj := object.NewObject(mgl32.Vec3{0, 0, 0}, "square.png")
 	cam := camera.NewCamera(program, 45, mgl32.Vec3{1, 1, 1}, win.GetWidth(), win.GetHeight())
 
 	gl.ActiveTexture(gl.TEXTURE0)
@@ -172,6 +95,6 @@ func draw(obj *object.Object, program uint32) {
 	model := mgl32.Translate3D(obj.GetPos().Elem())
 	gl.UniformMatrix4fv(gl.GetUniformLocation(program, gl.Str("model\x00")), 1, false, &model[0])
 	// не работает нормально наложение текстур
-	// gl.DrawElements(gl.TRIANGLES, int32(len(squareIndices)), gl.UNSIGNED_INT, nil)
-	gl.DrawArrays(gl.TRIANGLES, 0, int32(len(square)))
+	gl.DrawElements(gl.TRIANGLES, int32(len(obj.Indices)), gl.UNSIGNED_INT, nil)
+	//gl.DrawArrays(gl.TRIANGLES, 0, int32(len(square)))
 }
