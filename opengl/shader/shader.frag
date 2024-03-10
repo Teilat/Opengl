@@ -8,5 +8,5 @@ uniform sampler2D tex;
 
 out vec4 color;
 void main() {
-    color = mix(texture(tex,texturePos), ourColor, colorMult*0.05);
+    color = mix(texture(tex,texturePos), ourColor, colorMult*0.06);
 }

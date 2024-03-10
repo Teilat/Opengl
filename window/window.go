@@ -81,8 +81,8 @@ func InitGlfw(width, height, refreshRate int, title string, fullscreen bool,
 	window.SetSizeCallback(resizeCallback)
 
 	return &Window{
-		Window: window,
-		//Text:           text.Init(32, width, height),
+		Window:         window,
+		Text:           text.Init(32, width, height),
 		monitor:        monitor,
 		title:          title,
 		fullScreenLock: time.Now(),

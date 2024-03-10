@@ -2,6 +2,7 @@ package text
 
 import (
 	"fmt"
+	"github.com/go-gl/gl/all-core/gl"
 	"github.com/nullboundary/glfont"
 	"log"
 )
@@ -18,6 +19,12 @@ type Item struct {
 }
 
 func Init(scale, windowWidth, windowHeight int) *Text {
+	// нужно для инициализации шейдерной программы этой либы
+	// пакет должен совподать с пакетом внутири либы:github.com/go-gl/gl/all-core/gl
+	if err := gl.Init(); err != nil {
+		log.Printf("LoadFont: %v", err)
+	}
+
 	font, err := glfont.LoadFont("./window/text/Roboto-Light.ttf", int32(scale), windowWidth, windowHeight)
 	if err != nil {
 		log.Printf("LoadFont: %v", err)
