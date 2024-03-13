@@ -80,6 +80,8 @@ func InitGlfw(width, height, refreshRate int, title string, fullscreen bool,
 	window.SetCursorPosCallback(cursorCallback)
 	window.SetSizeCallback(resizeCallback)
 
+	defer input.SetCursorPos(window.GetCursorPos())
+
 	return &Window{
 		Window:         window,
 		Text:           text.Init(32, width, height),
@@ -104,6 +106,10 @@ func (w *Window) GetHeight() int {
 		return w.monitor.GetVideoMode().Height
 	}
 	return w.height
+}
+
+func (w *Window) GetCursorPos() (float64, float64) {
+	return w.Window.GetCursorPos()
 }
 
 func (w *Window) OnWindowModeChange(cam *camera.Camera) {
