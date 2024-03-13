@@ -3,7 +3,6 @@ package main
 import (
 	"C"
 	"fmt"
-	"math"
 	"opengl/opengl"
 	"opengl/opengl/camera"
 	"opengl/opengl/object"
@@ -36,19 +35,13 @@ func main() {
 	gl.Enable(gl.DEPTH_TEST)
 	//gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
 
-	obj := object.NewObject(mgl32.Vec3{0, 0, 0}, "square.png")
-	cam := camera.NewCamera(program, 45, mgl32.Vec3{1, 1, 1}, win.GetWidth(), win.GetHeight())
-
-	gl.ActiveTexture(gl.TEXTURE0)
-	gl.BindTexture(gl.TEXTURE_2D, obj.Texture)
-	gl.Uniform1i(gl.GetUniformLocation(program, gl.Str("tex\x00")), 0)
-
-	vertexColorLocation := gl.GetUniformLocation(program, gl.Str("ourColor\x00"))
+	obj := object.NewObject(mgl32.Vec3{3, 0, 0}, "square.png", "./opengl/object/Torus Knot/scene.gltf")
+	obj2 := object.NewObject(mgl32.Vec3{0, 0, 3}, "square.png", "./opengl/object/Cube/scene.gltf")
+	//obj := object.NewObject(mgl32.Vec3{3, 0, 0}, "", "./opengl/object/Open Cube/scene.gltf")
+	//obj := object.NewObject(mgl32.Vec3{-3, 0, 3}, "", "./opengl/object/Sphere/scene.gltf")
+	cam := camera.NewCamera(program, 80, mgl32.Vec3{-7, 7, 7}, mgl32.Vec3{0, 0, 0}, win.GetWidth(), win.GetHeight())
 
 	gl.ClearColor(0.2, 0.3, 0.3, 1.0)
-
-	str := ""
-	gl.Uniform4f(vertexColorLocation, float32(1), float32(1), float32(1), 1.0)
 
 	for !win.ShouldClose() {
 		t := time.Now()
@@ -58,17 +51,21 @@ func main() {
 
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-		upd(program, vertexColorLocation, cam, &str)
-		draw(obj, program)
+		upd(program, cam)
+		draw([]*object.Object{obj, obj2}, program)
 
 		camPos := fmt.Sprintf("camera pos:%v", cam.GetPos())
-		lookAtPos := fmt.Sprintf("look at pos:%v", cam.GetLookAt())
+		lookAt := fmt.Sprintf("look at:%v", cam.GetLookAt())
+		fov := fmt.Sprintf("fov:%v", cam.GetFov())
 		win.Text.DrawText([]text.Item{
-			{Text: &str, PosX: 0, PosY: 16, Scale: 0.5},
-			{Text: &camPos, PosX: 0, PosY: 32, Scale: 0.5},
-			{Text: &lookAtPos, PosX: 0, PosY: 48, Scale: 0.5},
+			{Text: &camPos, PosX: 0, PosY: 16, Scale: 0.5},
+			{Text: &lookAt, PosX: 0, PosY: 32, Scale: 0.5},
+			{Text: &fov, PosX: 0, PosY: 48, Scale: 0.5},
 		})
 
+		// TODO fps counter
+		// мапка с таймом в ключе
+		// first in last out,
 		win.SwapBuffers()
 
 		time.Sleep(time.Second/time.Duration(Fps) - time.Since(t))
@@ -76,26 +73,19 @@ func main() {
 	gl.DeleteProgram(program)
 }
 
-func upd(program uint32, vertexColorLocation int32, cam *camera.Camera, s *string) {
+func upd(program uint32, cam *camera.Camera) {
 	gl.UseProgram(program)
-	t := glfw.GetTime()
-	redValue := math.Abs(math.Cos(t))
-	greenValue := math.Abs(math.Cos(t + 1))
-	blueValue := math.Abs(math.Cos(t + 2))
-	gl.Uniform4f(vertexColorLocation, float32(redValue), float32(greenValue), float32(blueValue), 1.0)
-	*s = fmt.Sprintf("%f,%f,%f", float32(redValue), float32(greenValue), float32(blueValue))
 	cam.Update()
 }
 
-func draw(obj *object.Object, program uint32) {
+func draw(objs []*object.Object, program uint32) {
 	gl.UseProgram(program)
+	for _, obj := range objs {
+		gl.BindTexture(gl.TEXTURE_2D, obj.Texture)
+		gl.BindVertexArray(obj.Vao)
 
-	gl.BindTexture(gl.TEXTURE_2D, obj.Texture)
-	gl.BindVertexArray(obj.Vao)
-
-	model := mgl32.Translate3D(obj.GetPos().Elem())
-	gl.UniformMatrix4fv(gl.GetUniformLocation(program, gl.Str("model\x00")), 1, false, &model[0])
-	// не работает нормально наложение текстур
-	gl.DrawElements(gl.TRIANGLES, int32(len(obj.Indices)), gl.UNSIGNED_INT, nil)
-	//gl.DrawArrays(gl.TRIANGLES, 0, int32(len(square)))
+		model := mgl32.Translate3D(obj.GetPos().Elem())
+		gl.UniformMatrix4fv(gl.GetUniformLocation(program, gl.Str("model\x00")), 1, false, &model[0])
+		gl.DrawElements(gl.TRIANGLES, int32(len(obj.Indices)), gl.UNSIGNED_INT, nil)
+	}
 }
