@@ -16,35 +16,72 @@ import (
 
 type Object struct {
 	*gltf.Document
-	vertices [][3]float32
-	Indices  []uint32
-	Vao      uint32
-	Texture  uint32
-	pos      mgl32.Vec3
+	Meshes []*Mesh
+	pos    mgl32.Vec3
 }
 
-func NewObject(pos mgl32.Vec3, texture, filename string) *Object {
-	doc, _ := gltf.Open(filename)
-	fmt.Println(len(doc.Meshes))
-	indId := doc.Meshes[0].Primitives[0].Indices
-	posId := doc.Meshes[0].Primitives[0].Attributes["POSITION"]
-	texId := doc.Meshes[0].Primitives[0].Attributes["TEXCOORD_0"]
-	positions1, _ := modeler.ReadPosition(doc, doc.Accessors[posId], [][3]float32{})
-	indices1, _ := modeler.ReadIndices(doc, doc.Accessors[*indId], []uint32{})
-	texture1, _ := modeler.ReadTextureCoord(doc, doc.Accessors[texId], [][2]float32{})
-	fmt.Println(filename, "texture len", len(texture1))
+type Mesh struct {
+	Name       string
+	Indices    []uint32
+	Vertices   [][3]float32
+	Normal     [][3]float32
+	Vao        uint32
+	Texture1   [][2]float32
+	Texture1Id uint32
+	Texture2   [][2]float32
+	Texture2Id uint32
+	Texture3   [][2]float32
+	Texture3Id uint32
+	Tangent    [][4]float32
+}
+
+func NewObject(pos mgl32.Vec3, texture, path string) *Object {
+	doc, err := gltf.Open(path + "/scene.gltf")
+	if err != nil {
+		fmt.Println(err)
+		return nil
+	}
+	fmt.Println("total meshes:", len(doc.Meshes))
 	obj := &Object{
 		Document: doc,
-		vertices: positions1,
-		Indices:  indices1,
-		Vao:      makeVAO(positions1, indices1, texture1),
 		pos:      pos,
 	}
+	for _, mesh := range doc.Meshes {
+		m := Mesh{
+			Name: mesh.Name,
+		}
+		indId := mesh.Primitives[0].Indices
+		indices1, _ := modeler.ReadIndices(doc, doc.Accessors[*indId], []uint32{})
+		m.Indices = indices1
+		for attribute, index := range mesh.Primitives[0].Attributes {
+			switch attribute {
+			case "POSITION":
+				positions1, _ := modeler.ReadPosition(doc, doc.Accessors[index], [][3]float32{})
+				m.Vertices = positions1
+			case "NORMAL":
+				normal1, _ := modeler.ReadNormal(doc, doc.Accessors[index], [][3]float32{})
+				m.Normal = normal1
+			case "TEXCOORD_0":
+				texture1, _ := modeler.ReadTextureCoord(doc, doc.Accessors[index], [][2]float32{})
+				m.Texture1 = texture1
+			case "TEXCOORD_1":
+				texture2, _ := modeler.ReadTextureCoord(doc, doc.Accessors[index], [][2]float32{})
+				m.Texture2 = texture2
+			case "TEXCOORD_2":
+				texture3, _ := modeler.ReadTextureCoord(doc, doc.Accessors[index], [][2]float32{})
+				m.Texture3 = texture3
+			case "TANGENT":
+				tangent1, _ := modeler.ReadTangent(doc, doc.Accessors[index], [][4]float32{})
+				m.Tangent = tangent1
+			}
+		}
 
-	if texture != "" {
-		obj.Texture = bindTexture(texture)
+		m.Vao = makeVAO(m.Vertices, m.Indices, m.Texture1)
+		if (texture != "") && (len(m.Texture1) > 0) {
+			m.Texture1Id = bindTexture(path + "/" + texture)
+		}
+		obj.Meshes = append(obj.Meshes, &m)
 	}
-
 	return obj
 }
 
