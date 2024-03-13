@@ -13,3 +13,7 @@ func CursorCallback(_ *glfw.Window, posX float64, posY float64) {
 	posXx = posX
 	posYy = -posY
 }
+
+func SetCursorPos(x, y float64) {
+	posXx, posYy = x, y
+}
