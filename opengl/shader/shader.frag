@@ -1,12 +1,14 @@
 #version 410
 
 in vec2 texturePos;
-in float colorMult;
+in float colorMult; // коофицент отдаления от камеры
 
-uniform vec4 ourColor;
 uniform sampler2D tex;
 
 out vec4 color;
 void main() {
-    color = mix(texture(tex,texturePos), ourColor, colorMult*0.06);
+    color = texture(tex,texturePos);
+    if (texturePos == vec2(0,0)) {
+        color = vec4(1,1,1,1)*(colorMult*0.06);
+    }
 }
