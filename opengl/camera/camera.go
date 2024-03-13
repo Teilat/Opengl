@@ -32,13 +32,13 @@ type Camera struct {
 	windowHeight float32
 }
 
-func NewCamera(program uint32, fov float32, pos mgl32.Vec3, width, height int) *Camera {
+func NewCamera(program uint32, fov float32, pos, lookAt mgl32.Vec3, width, height int) *Camera {
 	c := &Camera{
 		ShaderCameraLocation:     gl.GetUniformLocation(program, gl.Str(location)),
 		ShaderProjectionLocation: gl.GetUniformLocation(program, gl.Str(projection)),
 
 		pos:    pos,
-		lookAt: mgl32.Vec3{0, 0, 0},
+		lookAt: lookAt, // TODO сделать спавн камеры на желаемые координаты переданые в lookAt
 		up:     mgl32.Vec3{0, 1, 0},
 
 		fov:         fov,
@@ -112,6 +112,10 @@ func (c *Camera) GetLookAt() mgl32.Vec3 {
 
 func (c *Camera) GetUp() mgl32.Vec3 {
 	return c.up
+}
+
+func (c *Camera) GetFov() float32 {
+	return c.fov
 }
 
 func (c *Camera) SetPos(pos mgl32.Vec3) {
