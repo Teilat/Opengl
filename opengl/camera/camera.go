@@ -1,6 +1,7 @@
 package camera
 
 import (
+	"context"
 	"math"
 	"opengl/window/input"
 
@@ -30,9 +31,11 @@ type Camera struct {
 
 	windowWidth  float32
 	windowHeight float32
+
+	debug *debug
 }
 
-func NewCamera(program uint32, fov float32, pos, lookAt mgl32.Vec3, width, height int) *Camera {
+func NewCamera(ctx context.Context, program uint32, fov float32, pos, lookAt mgl32.Vec3, width, height int) *Camera {
 	c := &Camera{
 		ShaderCameraLocation:     gl.GetUniformLocation(program, gl.Str(location)),
 		ShaderProjectionLocation: gl.GetUniformLocation(program, gl.Str(projection)),
@@ -46,6 +49,19 @@ func NewCamera(program uint32, fov float32, pos, lookAt mgl32.Vec3, width, heigh
 
 		windowHeight: float32(height),
 		windowWidth:  float32(width),
+	}
+
+	if true {
+		dCamPos := ""
+		dLookAt := ""
+		dFov := ""
+		d := &debug{
+			lockAt: &dLookAt,
+			fov:    &dFov,
+			pos:    &dCamPos,
+		}
+		c.debug = d
+		go d.run(ctx, c)
 	}
 
 	gl.UniformMatrix4fv(c.ShaderCameraLocation, 1, false, c.getCameraMatrix4fv())
@@ -139,4 +155,8 @@ func (c *Camera) getCameraMatrix4fv() *float32 {
 func (c *Camera) getPerspectiveMatrix4fv() *float32 {
 	val := mgl32.Perspective(mgl32.DegToRad(c.fov), c.windowWidth/c.windowHeight, 0.1, 100.0)
 	return &val[0]
+}
+
+func (c *Camera) GetDebug() *debug {
+	return c.debug
 }

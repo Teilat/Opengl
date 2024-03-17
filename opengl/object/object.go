@@ -103,6 +103,17 @@ func (o *Object) Move(pos mgl32.Vec3) {
 	o.pos = pos
 }
 
+func (o *Object) Draw(program uint32) {
+	for _, mesh := range o.Meshes {
+		gl.BindTexture(gl.TEXTURE_2D, mesh.Texture1Id)
+		gl.BindVertexArray(mesh.Vao)
+
+		model := mgl32.Translate3D(o.GetPos().Elem())
+		gl.UniformMatrix4fv(gl.GetUniformLocation(program, gl.Str("model\x00")), 1, false, &model[0])
+		gl.DrawElements(gl.TRIANGLES, int32(len(mesh.Indices)), gl.UNSIGNED_INT, nil)
+	}
+}
+
 func makeVAO(vertices [][3]float32, indices []uint32, texture [][2]float32) uint32 {
 	var vertexArrayObject, vertexBufferObject, indexBufferObject uint32
 	stride := 5 * int32(unsafe.Sizeof(float32(0)))
