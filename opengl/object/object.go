@@ -18,40 +18,55 @@ type Object struct {
 	*gltf.Document
 	Meshes []*Mesh
 	pos    mgl32.Vec3
+	Images []*gltf.Image
 }
 
 type Mesh struct {
 	Name       string
+	Material   *gltf.Material
 	Indices    []uint32
 	Vertices   [][3]float32
 	Normal     [][3]float32
 	Vao        uint32
+	TextureId  uint32
+	Texture    *gltf.Texture
+	ImageId    uint32
 	Texture1   [][2]float32
 	Texture1Id uint32
-	Texture2   [][2]float32
-	Texture2Id uint32
-	Texture3   [][2]float32
-	Texture3Id uint32
 	Tangent    [][4]float32
 }
 
-func NewObject(pos mgl32.Vec3, texture, path string) *Object {
+func NewObject(pos mgl32.Vec3, path string) *Object {
 	doc, err := gltf.Open(path + "/scene.gltf")
 	if err != nil {
 		fmt.Println(err)
 		return nil
 	}
-	fmt.Println("total meshes:", len(doc.Meshes))
+	fmt.Println("model:", path)
+	fmt.Println("\ttotal meshes:", len(doc.Meshes))
+	fmt.Println("\ttotal textures:", len(doc.Textures))
+	fmt.Println("\ttotal images:", len(doc.Images))
 	obj := &Object{
 		Document: doc,
 		pos:      pos,
+		Images:   doc.Images,
 	}
 	for _, mesh := range doc.Meshes {
 		m := Mesh{
-			Name: mesh.Name,
+			Name:     mesh.Name,
+			Material: doc.Materials[*mesh.Primitives[0].Material],
 		}
-		indId := mesh.Primitives[0].Indices
-		indices1, _ := modeler.ReadIndices(doc, doc.Accessors[*indId], []uint32{})
+		if len(mesh.Primitives) > 1 {
+			fmt.Println(m)
+		}
+
+		if m.Material.PBRMetallicRoughness.BaseColorTexture != nil {
+			m.TextureId = m.Material.PBRMetallicRoughness.BaseColorTexture.Index
+			m.Texture = doc.Textures[m.TextureId]
+			m.ImageId = *m.Texture.Source
+		}
+
+		indices1, _ := modeler.ReadIndices(doc, doc.Accessors[*mesh.Primitives[0].Indices], []uint32{})
 		m.Indices = indices1
 		for attribute, index := range mesh.Primitives[0].Attributes {
 			switch attribute {
@@ -64,12 +79,6 @@ func NewObject(pos mgl32.Vec3, texture, path string) *Object {
 			case "TEXCOORD_0":
 				texture1, _ := modeler.ReadTextureCoord(doc, doc.Accessors[index], [][2]float32{})
 				m.Texture1 = texture1
-			case "TEXCOORD_1":
-				texture2, _ := modeler.ReadTextureCoord(doc, doc.Accessors[index], [][2]float32{})
-				m.Texture2 = texture2
-			case "TEXCOORD_2":
-				texture3, _ := modeler.ReadTextureCoord(doc, doc.Accessors[index], [][2]float32{})
-				m.Texture3 = texture3
 			case "TANGENT":
 				tangent1, _ := modeler.ReadTangent(doc, doc.Accessors[index], [][4]float32{})
 				m.Tangent = tangent1
@@ -77,9 +86,10 @@ func NewObject(pos mgl32.Vec3, texture, path string) *Object {
 		}
 
 		m.Vao = makeVAO(m.Vertices, m.Indices, m.Texture1)
-		if (texture != "") && (len(m.Texture1) > 0) {
-			m.Texture1Id = bindTexture(path + "/" + texture)
+		if len(m.Texture1) > 0 {
+			m.Texture1Id = bindTexture(path + "/" + obj.Images[m.ImageId].URI)
 		}
+
 		obj.Meshes = append(obj.Meshes, &m)
 	}
 	return obj
@@ -157,7 +167,7 @@ func normalize(vertices [][3]float32) [][3]float32 {
 func bindTexture(texturePath string) uint32 {
 	var texture uint32
 
-	img, err := getImageFromFilePath("./" + texturePath)
+	img, err := getImageFromFilePath(texturePath)
 	if err != nil {
 		fmt.Println(err)
 	}
