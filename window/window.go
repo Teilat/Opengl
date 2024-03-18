@@ -80,7 +80,7 @@ func InitGlfw(width, height, refreshRate int, title string, fullscreen bool,
 	window.SetCursorPosCallback(cursorCallback)
 	window.SetSizeCallback(resizeCallback)
 
-	defer input.SetCursorPos(window.GetCursorPos())
+	input.SetCursorPos(window.GetCursorPos())
 
 	return &Window{
 		Window:         window,

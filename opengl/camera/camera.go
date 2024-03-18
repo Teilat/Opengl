@@ -32,7 +32,7 @@ type Camera struct {
 	windowWidth  float32
 	windowHeight float32
 
-	debug *debug
+	debug *Debug
 }
 
 func NewCamera(ctx context.Context, program uint32, fov float32, pos, lookAt mgl32.Vec3, width, height int) *Camera {
@@ -55,7 +55,7 @@ func NewCamera(ctx context.Context, program uint32, fov float32, pos, lookAt mgl
 		dCamPos := ""
 		dLookAt := ""
 		dFov := ""
-		d := &debug{
+		d := &Debug{
 			lockAt: &dLookAt,
 			fov:    &dFov,
 			pos:    &dCamPos,
@@ -69,6 +69,8 @@ func NewCamera(ctx context.Context, program uint32, fov float32, pos, lookAt mgl
 	return c
 }
 
+// global methods
+
 func (c *Camera) Update() {
 	c.calcLookAt()
 	c.calcMovement()
@@ -76,6 +78,54 @@ func (c *Camera) Update() {
 	c.updFov()
 
 	gl.UniformMatrix4fv(c.ShaderCameraLocation, 1, false, c.getCameraMatrix4fv())
+}
+
+func (c *Camera) UpdateWindow(width, height float32) {
+	c.windowWidth, c.windowHeight = width, height
+	gl.UniformMatrix4fv(c.ShaderProjectionLocation, 1, false, c.getPerspectiveMatrix4fv())
+}
+
+// getters
+
+func (c *Camera) GetPos() mgl32.Vec3 {
+	return c.pos
+}
+
+func (c *Camera) GetLookAt() mgl32.Vec3 {
+	return c.lookAt
+}
+
+func (c *Camera) GetUp() mgl32.Vec3 {
+	return c.up
+}
+
+func (c *Camera) GetFov() float32 {
+	return c.fov
+}
+
+func (c *Camera) GetDebug() *Debug {
+	return c.debug
+}
+
+// setters
+
+func (c *Camera) Move(move mgl32.Vec3) {
+	c.pos = c.pos.Add(move)
+}
+
+func (c *Camera) SetPos(pos mgl32.Vec3) {
+	c.pos = pos
+}
+
+// local methods
+func (c *Camera) getCameraMatrix4fv() *float32 {
+	val := mgl32.LookAtV(c.pos, c.lookAt.Add(c.pos), c.up)
+	return &val[0]
+}
+
+func (c *Camera) getPerspectiveMatrix4fv() *float32 {
+	val := mgl32.Perspective(mgl32.DegToRad(c.fov), c.windowWidth/c.windowHeight, 0.1, 100.0)
+	return &val[0]
 }
 
 func (c *Camera) calcLookAt() {
@@ -116,47 +166,4 @@ func (c *Camera) calcMovement() {
 	c.Move(c.GetLookAt().Mul(float32(movementZ * movementMulti)))
 	c.Move(c.GetLookAt().Cross(mgl32.Vec3{0, 1, 0}).Mul(float32(movementX * movementMulti)))
 	c.Move(c.GetUp().Mul(float32(movementY * movementMulti)))
-}
-
-func (c *Camera) GetPos() mgl32.Vec3 {
-	return c.pos
-}
-
-func (c *Camera) GetLookAt() mgl32.Vec3 {
-	return c.lookAt
-}
-
-func (c *Camera) GetUp() mgl32.Vec3 {
-	return c.up
-}
-
-func (c *Camera) GetFov() float32 {
-	return c.fov
-}
-
-func (c *Camera) SetPos(pos mgl32.Vec3) {
-	c.pos = pos
-}
-
-func (c *Camera) UpdateWindow(width, height float32) {
-	c.windowWidth, c.windowHeight = width, height
-	gl.UniformMatrix4fv(c.ShaderProjectionLocation, 1, false, c.getPerspectiveMatrix4fv())
-}
-
-func (c *Camera) Move(move mgl32.Vec3) {
-	c.pos = c.pos.Add(move)
-}
-
-func (c *Camera) getCameraMatrix4fv() *float32 {
-	val := mgl32.LookAtV(c.pos, c.lookAt.Add(c.pos), c.up)
-	return &val[0]
-}
-
-func (c *Camera) getPerspectiveMatrix4fv() *float32 {
-	val := mgl32.Perspective(mgl32.DegToRad(c.fov), c.windowWidth/c.windowHeight, 0.1, 100.0)
-	return &val[0]
-}
-
-func (c *Camera) GetDebug() *debug {
-	return c.debug
 }

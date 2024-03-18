@@ -18,8 +18,8 @@ import (
 )
 
 var (
-	Width  = 800
-	Height = 600
+	Width  = 1280
+	Height = 1024
 
 	FpsLock = true
 	Fps     = 75

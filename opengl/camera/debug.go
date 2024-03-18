@@ -7,13 +7,13 @@ import (
 	"time"
 )
 
-type debug struct {
+type Debug struct {
 	lockAt *string
 	fov    *string
 	pos    *string
 }
 
-func (d *debug) run(ctx context.Context, cam *Camera) {
+func (d *Debug) run(ctx context.Context, cam *Camera) {
 	ticker := time.NewTicker(metric.TickerResolution)
 	for {
 		select {
@@ -27,12 +27,12 @@ func (d *debug) run(ctx context.Context, cam *Camera) {
 	}
 }
 
-func (d *debug) GetLookAtString() *string {
+func (d *Debug) GetLookAtString() *string {
 	return d.lockAt
 }
-func (d *debug) GetPosString() *string {
+func (d *Debug) GetPosString() *string {
 	return d.pos
 }
-func (d *debug) GetFovString() *string {
+func (d *Debug) GetFovString() *string {
 	return d.fov
 }
