@@ -4,6 +4,7 @@ import (
 	"context"
 	"math"
 	"opengl/window/input"
+	"time"
 
 	"github.com/go-gl/gl/v4.6-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -35,7 +36,7 @@ type Camera struct {
 	debug *Debug
 }
 
-func NewCamera(ctx context.Context, program uint32, fov float32, pos, lookAt mgl32.Vec3, width, height int) *Camera {
+func NewCamera(ctx context.Context, ticker *time.Ticker, program uint32, fov float32, pos, lookAt mgl32.Vec3, width, height int) *Camera {
 	c := &Camera{
 		ShaderCameraLocation:     gl.GetUniformLocation(program, gl.Str(location)),
 		ShaderProjectionLocation: gl.GetUniformLocation(program, gl.Str(projection)),
@@ -66,17 +67,13 @@ func NewCamera(ctx context.Context, program uint32, fov float32, pos, lookAt mgl
 
 	gl.UniformMatrix4fv(c.ShaderCameraLocation, 1, false, c.getCameraMatrix4fv())
 	gl.UniformMatrix4fv(c.ShaderProjectionLocation, 1, false, c.getPerspectiveMatrix4fv())
+	go c.fixedUpdate(ctx, ticker)
 	return c
 }
 
 // global methods
 
 func (c *Camera) Update() {
-	c.calcLookAt()
-	c.calcMovement()
-
-	c.updFov()
-
 	gl.UniformMatrix4fv(c.ShaderCameraLocation, 1, false, c.getCameraMatrix4fv())
 }
 
@@ -118,6 +115,21 @@ func (c *Camera) SetPos(pos mgl32.Vec3) {
 }
 
 // local methods
+
+func (c *Camera) fixedUpdate(ctx context.Context, ticker *time.Ticker) {
+	for {
+		select {
+		case <-ticker.C:
+			c.calcLookAt()
+			c.calcMovement()
+			c.updFov()
+		case <-ctx.Done():
+			return
+		}
+	}
+
+}
+
 func (c *Camera) getCameraMatrix4fv() *float32 {
 	val := mgl32.LookAtV(c.pos, c.lookAt.Add(c.pos), c.up)
 	return &val[0]

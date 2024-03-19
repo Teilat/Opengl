@@ -94,6 +94,13 @@ func InitGlfw(width, height, refreshRate int, title string, fullscreen bool,
 	}
 }
 
+func (w *Window) GetRefreshRate() int {
+	if w.fullScreen {
+		return w.monitor.GetVideoMode().RefreshRate
+	}
+	return w.refreshRate
+}
+
 func (w *Window) GetWidth() int {
 	if w.fullScreen {
 		return w.monitor.GetVideoMode().Width

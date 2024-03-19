@@ -28,6 +28,8 @@ var (
 func main() {
 	runtime.LockOSThread()
 	ctx, cancel := context.WithCancel(context.Background())
+	fixedUpdateTicker := time.NewTicker(time.Second / time.Duration(Fps*2))
+
 	win := window.InitGlfw(Width, Height, Fps, "Program", false, input.KeyCallback, input.CursorCallback, window.OnResize)
 	program := opengl.InitOpenGL()
 
@@ -35,7 +37,8 @@ func main() {
 	gl.Enable(gl.DEPTH_TEST)
 	//gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
 
-	cam := camera.NewCamera(ctx, program, 80, mgl32.Vec3{2, 1, -3}, mgl32.Vec3{0, 0, 0}, win.GetWidth(), win.GetHeight())
+	cam := camera.NewCamera(ctx, fixedUpdateTicker, program, 80, mgl32.Vec3{2, 1, -3}, mgl32.Vec3{0, 0, 0}, win.GetWidth(), win.GetHeight())
+
 	gl.ClearColor(0.2, 0.3, 0.3, 1.0)
 
 	fpsMeter := metric.NewFPSMeter(ctx)
