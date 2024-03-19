@@ -13,13 +13,12 @@ type Fps struct {
 	fps    *string
 }
 
-func NewFPSMeter(ctx context.Context) *Fps {
+func NewFPSMeter() *Fps {
 	s := fmt.Sprintf("fps:%d", 0)
 	f := Fps{
 		frames: 0,
 		fps:    &s,
 	}
-	go f.run(ctx, f.fps, time.Now())
 	return &f
 }
 
@@ -34,6 +33,10 @@ func (f *Fps) run(ctx context.Context, str *string, start time.Time) {
 			return
 		}
 	}
+}
+
+func (f *Fps) Start(ctx context.Context) {
+	go f.run(ctx, f.fps, time.Now())
 }
 
 func (f *Fps) GetString() *string {

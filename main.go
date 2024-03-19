@@ -41,7 +41,7 @@ func main() {
 
 	gl.ClearColor(0.2, 0.3, 0.3, 1.0)
 
-	fpsMeter := metric.NewFPSMeter(ctx)
+	fpsMeter := metric.NewFPSMeter()
 
 	win.Text.AddText([]*text.Item{
 		{Text: cam.GetDebug().GetPosString(), PosX: 0, Scale: 0.5},
@@ -50,12 +50,13 @@ func main() {
 		{Text: fpsMeter.GetString(), PosX: 0, Scale: 0.5},
 	})
 	objectManager := object.NewManager()
-	objectManager.AddObject(object.NewObject(mgl32.Vec3{3, 0, 0}, "./models/Torus Knot"))
+	objectManager.AddObject(object.NewObject("./models/Torus Knot"))
 	//objectManager.AddObject(object.NewObject(mgl32.Vec3{6, 0, 3}, "./models/Cube"))
 	//objectManager.AddObject(object.NewObject(mgl32.Vec3{3, 0, 0}, "./models/Open Cube"))
 	//objectManager.AddObject(object.NewObject(mgl32.Vec3{-3, 0, 3}, "./models/Sphere"))
 	//objectManager.AddObject(object.NewObject(mgl32.Vec3{0, 0, 0}, "./models/Car"))
 
+	fpsMeter.Start(ctx)
 	for !win.ShouldClose() {
 		t := time.Now()
 		glfw.PollEvents()
