@@ -31,13 +31,9 @@ func main() {
 	fixedUpdateTicker := time.NewTicker(time.Second / time.Duration(Fps*2))
 
 	win := window.InitGlfw(Width, Height, Fps, "Program", false, input.KeyCallback, input.CursorCallback, window.OnResize)
-	program := opengl.InitOpenGL()
+	program := opengl.InitOpenGL(false)
 
-	gl.UseProgram(program)
-	gl.Enable(gl.DEPTH_TEST)
-	//gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
-
-	cam := camera.NewCamera(ctx, fixedUpdateTicker, program, 80, mgl32.Vec3{2, 1, -3}, mgl32.Vec3{0, 0, 0}, win.GetWidth(), win.GetHeight())
+	cam := camera.NewCamera(ctx, fixedUpdateTicker, program, 80, mgl32.Vec3{3, 0, -3}, mgl32.Vec3{0, 0, 0}, win.GetWidth(), win.GetHeight())
 
 	gl.ClearColor(0.2, 0.3, 0.3, 1.0)
 
@@ -50,11 +46,12 @@ func main() {
 		{Text: fpsMeter.GetString(), PosX: 0, Scale: 0.5},
 	})
 	objectManager := object.NewManager()
-	objectManager.AddObject(object.NewObject("./models/Torus Knot"))
-	//objectManager.AddObject(object.NewObject(mgl32.Vec3{6, 0, 3}, "./models/Cube"))
-	//objectManager.AddObject(object.NewObject(mgl32.Vec3{3, 0, 0}, "./models/Open Cube"))
+	objectManager.AddObject(object.NewObject(mgl32.Vec3{3, 0, 3}, "./models/Torus Knot"))
+	//objectManager.AddObject(object.NewObject(mgl32.Vec3{0, 0, 0}, "./models/Cube"))
+	//objectManager.AddObject(object.NewObject(mgl32.Vec3{0, 0, 0}, "./models/Open Cube"))
 	//objectManager.AddObject(object.NewObject(mgl32.Vec3{-3, 0, 3}, "./models/Sphere"))
-	//objectManager.AddObject(object.NewObject(mgl32.Vec3{0, 0, 0}, "./models/Car"))
+	//objectManager.AddObject(object.NewObject(mgl32.Vec3{0, 0, 0}, "./models/Datsun 240k"))
+	//objectManager.AddObject(object.NewObject(mgl32.Vec3{0, 0, 0}, "./models/Mazda mx-5"))
 
 	fpsMeter.Start(ctx)
 	for !win.ShouldClose() {
@@ -63,7 +60,6 @@ func main() {
 		win.OnWindowModeChange(cam)
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-		gl.UseProgram(program)
 		cam.Update()
 
 		for _, obj := range objectManager.Objects {

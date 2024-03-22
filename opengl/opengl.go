@@ -23,7 +23,7 @@ type Shader struct {
 }
 
 // InitOpenGL initializes OpenGL and returns an intiialized program.
-func InitOpenGL() uint32 {
+func InitOpenGL(polygonMode bool) uint32 {
 	if err := gl.Init(); err != nil {
 		panic(err)
 	}
@@ -45,6 +45,12 @@ func InitOpenGL() uint32 {
 
 	for _, s := range shaders {
 		gl.DeleteShader(s.ObjectId)
+	}
+
+	gl.UseProgram(program)
+	gl.Enable(gl.DEPTH_TEST)
+	if polygonMode {
+		gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
 	}
 
 	return program

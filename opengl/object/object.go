@@ -7,15 +7,11 @@ import (
 	"github.com/qmuntal/gltf"
 	"image"
 	"image/draw"
+	"image/jpeg"
 	"image/png"
 	"os"
-)
-
-type NodeType int
-
-const (
-	Root NodeType = iota
-	Child
+	"strings"
+	"time"
 )
 
 type Object struct {
@@ -27,28 +23,28 @@ type Object struct {
 	Nodes     []*Node
 }
 
-func NewObject(path string) *Object {
+func NewObject(pos mgl32.Vec3, path string) *Object {
+	t := time.Now()
 	doc, err := gltf.Open(path + "/scene.gltf")
 	if err != nil {
 		fmt.Println(err)
 		return nil
 	}
-	fmt.Println("model:", path)
+	fmt.Printf("parsing model:%s\n", path)
 	fmt.Println("\ttotal mesh:", len(doc.Meshes))
 	fmt.Println("\ttotal textures:", len(doc.Textures))
 	fmt.Println("\ttotal images:", len(doc.Images))
 
-	obj := &Object{}
+	obj := &Object{pos: pos}
 	obj.Meshes = parseMeshes(doc)
 	obj.Nodes = parseNodes(doc, obj.Meshes)
 	obj.Scene, obj.MainScene = parseScenes(doc, obj.Nodes)
 	obj.Images = doc.Images
-	obj.pos = obj.MainScene.Nodes[0].translation
 
 	if len(obj.Meshes[0].Texture1) > 0 && len(obj.Images) > 0 {
 		obj.Meshes[0].Texture1Id = bindTexture(path + "/" + obj.Images[obj.Meshes[0].ImageId].URI)
 	}
-
+	fmt.Printf("Done in %f milliseconds\n", time.Since(t).Seconds()*1000)
 	return obj
 }
 
@@ -61,13 +57,15 @@ func (o *Object) Move(pos mgl32.Vec3) {
 }
 
 func (o *Object) Draw(program uint32) {
-	for _, mesh := range o.Meshes {
-		gl.BindTexture(gl.TEXTURE_2D, mesh.Texture1Id)
-		gl.BindVertexArray(mesh.Vao)
+	o.recursiveDraw(program, o.MainScene.Nodes)
+}
 
-		model := mgl32.Translate3D(o.GetPos().Elem())
-		gl.UniformMatrix4fv(gl.GetUniformLocation(program, gl.Str("model\x00")), 1, false, &model[0])
-		gl.DrawElements(gl.TRIANGLES, int32(len(mesh.Indices)), gl.UNSIGNED_INT, nil)
+func (o *Object) recursiveDraw(program uint32, nodes []*Node) {
+	for _, node := range nodes {
+		node.Draw(program, o.pos)
+		if len(node.children) > 0 {
+			o.recursiveDraw(program, node.children)
+		}
 	}
 }
 
@@ -99,14 +97,26 @@ func bindTexture(texturePath string) uint32 {
 
 func getImageFromFilePath(file string) (image.Image, error) {
 	imgFile, err := os.Open(file)
+	var img image.Image
 	if err != nil {
 		return nil, err
 	}
-	defer imgFile.Close()
 
-	img, err := png.Decode(imgFile)
-	if err != nil {
-		return nil, err
+	ext := strings.Split(file, ".")
+	switch ext[len(ext)-1] {
+	case "png":
+		img, err = png.Decode(imgFile)
+		if err != nil {
+			return nil, err
+		}
+
+	case "jpeg", "jpg":
+		img, err = jpeg.Decode(imgFile)
+		if err != nil {
+			return nil, err
+		}
 	}
+
+	imgFile.Close()
 	return img, nil
 }

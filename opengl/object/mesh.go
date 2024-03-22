@@ -23,9 +23,9 @@ type Mesh struct {
 }
 
 func parseMeshes(doc *gltf.Document) []*Mesh {
-	res := make([]*Mesh, 0)
-	for _, mesh := range doc.Meshes {
-		m := Mesh{
+	res := make([]*Mesh, len(doc.Meshes))
+	for i, mesh := range doc.Meshes {
+		m := &Mesh{
 			Name:     mesh.Name,
 			Material: doc.Materials[*mesh.Primitives[0].Material],
 		}
@@ -50,7 +50,7 @@ func parseMeshes(doc *gltf.Document) []*Mesh {
 		}
 
 		m.Vao = m.makeVAO()
-		res = append(res, &m)
+		res[i] = m
 	}
 	return res
 }

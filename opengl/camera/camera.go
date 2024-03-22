@@ -13,14 +13,16 @@ import (
 )
 
 const (
-	location   = "camera\x00"
-	projection = "projection\x00"
+	cameraMatrix = "cameraMatrix\x00"
+	projection   = "projection\x00"
 
 	movementMulti = 0.2
 )
 
 type Camera struct {
-	ShaderCameraLocation     int32
+	program uint32
+
+	ShaderCameraMatrix       int32
 	ShaderProjectionLocation int32
 
 	pos    mgl32.Vec3
@@ -38,7 +40,9 @@ type Camera struct {
 
 func NewCamera(ctx context.Context, ticker *time.Ticker, program uint32, fov float32, pos, lookAt mgl32.Vec3, width, height int) *Camera {
 	c := &Camera{
-		ShaderCameraLocation:     gl.GetUniformLocation(program, gl.Str(location)),
+		program: program,
+
+		ShaderCameraMatrix:       gl.GetUniformLocation(program, gl.Str(cameraMatrix)),
 		ShaderProjectionLocation: gl.GetUniformLocation(program, gl.Str(projection)),
 
 		pos:    pos,
@@ -65,7 +69,10 @@ func NewCamera(ctx context.Context, ticker *time.Ticker, program uint32, fov flo
 		go d.run(ctx, c)
 	}
 
-	gl.UniformMatrix4fv(c.ShaderCameraLocation, 1, false, c.getCameraMatrix4fv())
+	gl.UseProgram(c.program)
+
+	gl.UniformMatrix4fv(c.ShaderCameraMatrix, 1, false, c.getCameraMatrix4fv())
+
 	gl.UniformMatrix4fv(c.ShaderProjectionLocation, 1, false, c.getPerspectiveMatrix4fv())
 	go c.fixedUpdate(ctx, ticker)
 	return c
@@ -74,10 +81,12 @@ func NewCamera(ctx context.Context, ticker *time.Ticker, program uint32, fov flo
 // global methods
 
 func (c *Camera) Update() {
-	gl.UniformMatrix4fv(c.ShaderCameraLocation, 1, false, c.getCameraMatrix4fv())
+	gl.UseProgram(c.program)
+	gl.UniformMatrix4fv(c.ShaderCameraMatrix, 1, false, c.getCameraMatrix4fv())
 }
 
 func (c *Camera) UpdateWindow(width, height float32) {
+	gl.UseProgram(c.program)
 	c.windowWidth, c.windowHeight = width, height
 	gl.UniformMatrix4fv(c.ShaderProjectionLocation, 1, false, c.getPerspectiveMatrix4fv())
 }
@@ -127,7 +136,6 @@ func (c *Camera) fixedUpdate(ctx context.Context, ticker *time.Ticker) {
 			return
 		}
 	}
-
 }
 
 func (c *Camera) getCameraMatrix4fv() *float32 {
