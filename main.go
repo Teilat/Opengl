@@ -38,6 +38,7 @@ func main() {
 	gl.ClearColor(0.2, 0.3, 0.3, 1.0)
 
 	fpsMeter := metric.NewFPSMeter()
+	go metric.StartPprof()
 
 	win.Text.AddText([]*text.Item{
 		{Text: cam.GetDebug().GetPosString(), PosX: 0, Scale: 0.5},
@@ -47,11 +48,11 @@ func main() {
 	})
 	objectManager := object.NewManager()
 	objectManager.AddObject(object.NewObject(mgl32.Vec3{3, 0, 3}, "./models/Torus Knot"))
-	//objectManager.AddObject(object.NewObject(mgl32.Vec3{0, 0, 0}, "./models/Cube"))
-	//objectManager.AddObject(object.NewObject(mgl32.Vec3{0, 0, 0}, "./models/Open Cube"))
+	//objectManager.AddObject(object.NewObject(mgl32.Vec3{3, 0, 0}, "./models/Cube"))
+	//objectManager.AddObject(object.NewObject(mgl32.Vec3{0, 0, 3}, "./models/Open Cube"))
 	//objectManager.AddObject(object.NewObject(mgl32.Vec3{-3, 0, 3}, "./models/Sphere"))
-	//objectManager.AddObject(object.NewObject(mgl32.Vec3{0, 0, 0}, "./models/Datsun 240k"))
-	//objectManager.AddObject(object.NewObject(mgl32.Vec3{0, 0, 0}, "./models/Mazda mx-5"))
+	//objectManager.AddObject(object.NewObject(mgl32.Vec3{-3, 0, 0}, "./models/Datsun 240k"))
+	//objectManager.AddObject(object.NewObject(mgl32.Vec3{0, 0, -3}, "./models/Mazda mx-5"))
 
 	fpsMeter.Start(ctx)
 	for !win.ShouldClose() {

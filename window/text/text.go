@@ -46,6 +46,9 @@ func Init(scale int32, windowWidth, windowHeight int, fontName string) *Text {
 }
 
 func (t *Text) AddText(strings []*Item) {
+	if t.activeText == nil {
+		t.activeText = make([]*Item, 0)
+	}
 	for i, item := range strings {
 		if item.PosY == 0 {
 			item.PosY = float32(t.scale*int32(i+1)) * item.Scale
