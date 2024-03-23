@@ -1,17 +1,14 @@
 package object
 
 import (
-	"fmt"
 	"github.com/go-gl/gl/v4.6-core/gl"
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/qmuntal/gltf"
 )
 
 const (
-	modelTransformation = "modelTransformation\x00"
-	modelRotation       = "modelRotation\x00"
-	modelScale          = "modelScale\x00"
-	modelMatrix         = "modelMatrix\x00"
+	modelData   = "modelData\x00"
+	modelMatrix = "modelMatrix\x00"
 )
 
 type Node struct {
@@ -30,21 +27,18 @@ func (n *Node) Draw(program uint32, absPos mgl32.Vec3) {
 		gl.BindTexture(gl.TEXTURE_2D, n.mesh.Texture1Id)
 		gl.BindVertexArray(n.mesh.Vao)
 
-		mTranslation := n.translation
-		mScale := n.scale
-		mRotation := n.rotation
-
 		mMatrix := n.matrix
-		if !mMatrix.ApproxEqual(mgl32.Mat4{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}) {
-			fmt.Println(mMatrix)
-		}
-		gl.Uniform3fv(gl.GetUniformLocation(program, gl.Str(modelTransformation)), 1, &mTranslation[0])
-		gl.Uniform3fv(gl.GetUniformLocation(program, gl.Str(modelScale)), 1, &mScale[0])
-		gl.Uniform4fv(gl.GetUniformLocation(program, gl.Str(modelRotation)), 1, &mRotation[0])
+
+		gl.UniformMatrix4fv(gl.GetUniformLocation(program, gl.Str(modelData)), 1, false, n.getDataP())
 
 		gl.UniformMatrix4fv(gl.GetUniformLocation(program, gl.Str(modelMatrix)), 1, false, &mMatrix[0])
 		gl.DrawElements(gl.TRIANGLES, int32(len(n.mesh.Indices)), gl.UNSIGNED_INT, nil)
 	}
+}
+
+func (n *Node) getDataP() *float32 {
+	data := mgl32.Mat4x3FromCols(mgl32.Vec4{n.translation[0], n.translation[1], n.translation[2], 0}, n.rotation, mgl32.Vec4{n.scale[0], n.scale[1], n.scale[2], 0})
+	return &data[0]
 }
 
 func parseNodes(doc *gltf.Document, meshes []*Mesh) []*Node {
