@@ -10,17 +10,18 @@ import (
 	"image/jpeg"
 	"image/png"
 	"os"
+	"runtime"
 	"strings"
 	"time"
 )
 
 type Object struct {
-	Meshes    []*Mesh
 	pos       mgl32.Vec3
-	Images    []*gltf.Image
 	MainScene *Scene
 	Scene     []*Scene
 	Nodes     []*Node
+	Meshes    []*Mesh
+	Images    []*Image
 }
 
 func NewObject(pos mgl32.Vec3, path string) *Object {
@@ -39,12 +40,13 @@ func NewObject(pos mgl32.Vec3, path string) *Object {
 	obj.Meshes = parseMeshes(doc)
 	obj.Nodes = parseNodes(doc, obj.Meshes)
 	obj.Scene, obj.MainScene = parseScenes(doc, obj.Nodes)
-	obj.Images = doc.Images
+	obj.Images = parseImages(doc)
 
 	if len(obj.Meshes[0].Texture1) > 0 && len(obj.Images) > 0 {
 		obj.Meshes[0].Texture1Id = bindTexture(path + "/" + obj.Images[obj.Meshes[0].ImageId].URI)
 	}
 	fmt.Printf("Done in %f milliseconds\n", time.Since(t).Seconds()*1000)
+	runtime.GC()
 	return obj
 }
 
