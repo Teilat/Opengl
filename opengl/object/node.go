@@ -22,7 +22,7 @@ type Node struct {
 	rotation    mgl32.Vec4
 }
 
-func (n *Node) Draw(program uint32, absPos mgl32.Vec3) {
+func (n *Node) Draw(program uint32) {
 	if n.mesh != nil {
 		gl.BindTexture(gl.TEXTURE_2D, n.mesh.Texture1Id)
 		gl.BindVertexArray(n.mesh.Vao)
@@ -30,7 +30,6 @@ func (n *Node) Draw(program uint32, absPos mgl32.Vec3) {
 		mMatrix := n.matrix
 
 		gl.UniformMatrix4fv(gl.GetUniformLocation(program, gl.Str(modelData)), 1, false, n.getDataP())
-
 		gl.UniformMatrix4fv(gl.GetUniformLocation(program, gl.Str(modelMatrix)), 1, false, &mMatrix[0])
 		gl.DrawElements(gl.TRIANGLES, int32(len(n.mesh.Indices)), gl.UNSIGNED_INT, nil)
 	}

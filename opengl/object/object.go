@@ -64,7 +64,7 @@ func (o *Object) Draw(program uint32) {
 
 func (o *Object) recursiveDraw(program uint32, nodes []*Node) {
 	for _, node := range nodes {
-		node.Draw(program, o.pos)
+		node.Draw(program)
 		if len(node.children) > 0 {
 			o.recursiveDraw(program, node.children)
 		}

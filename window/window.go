@@ -137,7 +137,7 @@ func (w *Window) switchWindowMode() {
 	if w.fullScreen {
 		x, y, _, _ := w.monitor.GetWorkarea()
 		// refreshRate ignored when windowed
-		w.SetMonitor(nil, x+20, y+50, w.width, w.height, 0)
+		w.SetMonitor(nil, x+20, y+50, w.width, w.height, w.refreshRate)
 	} else {
 		vMode := w.monitor.GetVideoMode()
 		w.SetMonitor(w.monitor, 0, 0, vMode.Width, vMode.Height, vMode.RefreshRate)
