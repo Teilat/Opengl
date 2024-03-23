@@ -13,7 +13,9 @@ import (
 )
 
 const (
-	cameraMatrix = "cameraMatrix\x00"
+	cameraLookAt = "cameraLookAt\x00"
+	cameraPos    = "cameraPos\x00"
+	cameraUp     = "cameraUp\x00"
 	projection   = "projection\x00"
 
 	movementMulti = 0.2
@@ -22,7 +24,11 @@ const (
 type Camera struct {
 	program uint32
 
-	ShaderCameraMatrix       int32
+	ShaderCameraMatrix int32
+	ShaderCameraLookAt int32
+	ShaderCameraPos    int32
+	ShaderCameraUp     int32
+
 	ShaderProjectionLocation int32
 
 	pos    mgl32.Vec3
@@ -42,7 +48,10 @@ func NewCamera(ctx context.Context, ticker *time.Ticker, program uint32, fov flo
 	c := &Camera{
 		program: program,
 
-		ShaderCameraMatrix:       gl.GetUniformLocation(program, gl.Str(cameraMatrix)),
+		ShaderCameraLookAt: gl.GetUniformLocation(program, gl.Str(cameraLookAt)),
+		ShaderCameraPos:    gl.GetUniformLocation(program, gl.Str(cameraPos)),
+		ShaderCameraUp:     gl.GetUniformLocation(program, gl.Str(cameraUp)),
+
 		ShaderProjectionLocation: gl.GetUniformLocation(program, gl.Str(projection)),
 
 		pos:    pos,
@@ -71,7 +80,9 @@ func NewCamera(ctx context.Context, ticker *time.Ticker, program uint32, fov flo
 
 	gl.UseProgram(c.program)
 
-	gl.UniformMatrix4fv(c.ShaderCameraMatrix, 1, false, c.getCameraMatrix4fv())
+	gl.Uniform3fv(c.ShaderCameraLookAt, 1, c.GetLookAtP())
+	gl.Uniform3fv(c.ShaderCameraPos, 1, c.GetPosP())
+	gl.Uniform3fv(c.ShaderCameraUp, 1, c.GetPosP())
 
 	gl.UniformMatrix4fv(c.ShaderProjectionLocation, 1, false, c.getPerspectiveMatrix4fv())
 	go c.fixedUpdate(ctx, ticker)
@@ -82,7 +93,9 @@ func NewCamera(ctx context.Context, ticker *time.Ticker, program uint32, fov flo
 
 func (c *Camera) Update() {
 	gl.UseProgram(c.program)
-	gl.UniformMatrix4fv(c.ShaderCameraMatrix, 1, false, c.getCameraMatrix4fv())
+	gl.Uniform3fv(c.ShaderCameraLookAt, 1, c.GetLookAtP())
+	gl.Uniform3fv(c.ShaderCameraPos, 1, c.GetPosP())
+	gl.Uniform3fv(c.ShaderCameraUp, 1, c.GetUpP())
 }
 
 func (c *Camera) UpdateWindow(width, height float32) {
@@ -99,6 +112,18 @@ func (c *Camera) GetPos() mgl32.Vec3 {
 
 func (c *Camera) GetLookAt() mgl32.Vec3 {
 	return c.lookAt
+}
+
+func (c *Camera) GetLookAtP() *float32 {
+	return &c.lookAt[0]
+}
+
+func (c *Camera) GetPosP() *float32 {
+	return &c.pos[0]
+}
+
+func (c *Camera) GetUpP() *float32 {
+	return &c.up[0]
 }
 
 func (c *Camera) GetUp() mgl32.Vec3 {
@@ -136,11 +161,6 @@ func (c *Camera) fixedUpdate(ctx context.Context, ticker *time.Ticker) {
 			return
 		}
 	}
-}
-
-func (c *Camera) getCameraMatrix4fv() *float32 {
-	val := mgl32.LookAtV(c.pos, c.lookAt.Add(c.pos), c.up)
-	return &val[0]
 }
 
 func (c *Camera) getPerspectiveMatrix4fv() *float32 {
