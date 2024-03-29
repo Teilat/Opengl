@@ -24,14 +24,16 @@ type Node struct {
 
 func (n *Node) Draw(program uint32) {
 	if n.mesh != nil {
-		gl.BindTexture(gl.TEXTURE_2D, n.mesh.Texture1Id)
-		gl.BindVertexArray(n.mesh.Vao)
+		for _, p := range n.mesh.Primitives {
+			gl.BindTexture(gl.TEXTURE_2D, p.TextureId)
+			gl.BindVertexArray(p.Vao)
 
-		mMatrix := n.matrix
+			mMatrix := n.matrix
 
-		gl.UniformMatrix4fv(gl.GetUniformLocation(program, gl.Str(modelData)), 1, false, n.getDataP())
-		gl.UniformMatrix4fv(gl.GetUniformLocation(program, gl.Str(modelMatrix)), 1, false, &mMatrix[0])
-		gl.DrawElements(gl.TRIANGLES, int32(len(n.mesh.Indices)), gl.UNSIGNED_INT, nil)
+			gl.UniformMatrix4fv(gl.GetUniformLocation(program, gl.Str(modelData)), 1, false, n.getDataP())
+			gl.UniformMatrix4fv(gl.GetUniformLocation(program, gl.Str(modelMatrix)), 1, false, &mMatrix[0])
+			gl.DrawElements(p.PrimitiveMode, int32(len(p.Indices)), gl.UNSIGNED_INT, nil)
+		}
 	}
 }
 

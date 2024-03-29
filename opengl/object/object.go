@@ -16,7 +16,7 @@ import (
 )
 
 type Object struct {
-	pos       mgl32.Vec3
+	Pos       mgl32.Vec3
 	MainScene *Scene
 	Scene     []*Scene
 	Nodes     []*Node
@@ -36,26 +36,23 @@ func NewObject(pos mgl32.Vec3, path string) *Object {
 	fmt.Println("\ttotal textures:", len(doc.Textures))
 	fmt.Println("\ttotal images:", len(doc.Images))
 
-	obj := &Object{pos: pos}
-	obj.Meshes = parseMeshes(doc)
+	obj := &Object{Pos: pos}
+	obj.Images = parseImages(doc)
+	obj.Meshes = parseMeshes(doc, path, obj.Images)
 	obj.Nodes = parseNodes(doc, obj.Meshes)
 	obj.Scene, obj.MainScene = parseScenes(doc, obj.Nodes)
-	obj.Images = parseImages(doc)
 
-	if len(obj.Meshes[0].Texture1) > 0 && len(obj.Images) > 0 {
-		obj.Meshes[0].Texture1Id = bindTexture(path + "/" + obj.Images[obj.Meshes[0].ImageId].URI)
-	}
 	fmt.Printf("Done in %f milliseconds\n", time.Since(t).Seconds()*1000)
 	runtime.GC()
 	return obj
 }
 
 func (o *Object) GetPos() mgl32.Vec3 {
-	return o.pos
+	return o.Pos
 }
 
 func (o *Object) Move(pos mgl32.Vec3) {
-	o.pos = pos
+	o.Pos = pos
 }
 
 func (o *Object) Draw(program uint32) {
@@ -120,5 +117,6 @@ func getImageFromFilePath(file string) (image.Image, error) {
 	}
 
 	imgFile.Close()
+	fmt.Println(img.At(1, 1))
 	return img, nil
 }
