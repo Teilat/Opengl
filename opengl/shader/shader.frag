@@ -7,7 +7,9 @@ uniform sampler2D tex;
 
 out vec4 color;
 void main() {
-    color = texture(tex,texturePos);
+    color = texture2D(tex,texturePos);
+    if (color.w == 0) discard;
+
     if (texturePos == vec2(0,0)) {
         color = vec4(1,1,1,1)*(colorMult*0.06);
     }

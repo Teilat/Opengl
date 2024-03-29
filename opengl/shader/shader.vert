@@ -13,7 +13,7 @@ out vec2 texturePos;
 out float colorMult;
 
 mat4 calcCamMatrix(mat3 data){
-	vec3 pos = vec3(cameraData[0][0],cameraData[0][1],cameraData[0][2]);
+	vec3 pos = vec3(cameraData[0][0],cameraData[0][1],cameraData[0][2]); //camera pos
 	vec3 f = normalize(vec3(cameraData[1][0],cameraData[1][1],cameraData[1][2])); //camera direction
 	vec3 s = normalize(cross(f, vec3(cameraData[2][0],cameraData[2][1],cameraData[2][2]))); // camera side (right)
 	vec3 u = cross(s, f); // camera up
