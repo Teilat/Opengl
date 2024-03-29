@@ -1,0 +1,8 @@
+Model Information:
+* title:	Cacti
+* source:	https://sketchfab.com/3d-models/cacti-e4b031f9ad75497986a28d59ced81f2c
+* author:	evolveduk (https://sketchfab.com/evolveduk)
+
+Model License:
+* license type:	SKETCHFAB Standard (https://sketchfab.com/licenses)
+* requirements:	Under basic restrictions, use worldwide, on all types of media, commercially or not, and in all types of derivative works
