@@ -28,10 +28,8 @@ func (n *Node) Draw(program uint32) {
 			gl.BindTexture(gl.TEXTURE_2D, p.TextureId)
 			gl.BindVertexArray(p.Vao)
 
-			mMatrix := n.matrix
-
 			gl.UniformMatrix4fv(gl.GetUniformLocation(program, gl.Str(modelData)), 1, false, n.getDataP())
-			gl.UniformMatrix4fv(gl.GetUniformLocation(program, gl.Str(modelMatrix)), 1, false, &mMatrix[0])
+			gl.UniformMatrix4fv(gl.GetUniformLocation(program, gl.Str(modelMatrix)), 1, false, &n.matrix[0])
 			gl.DrawElements(p.PrimitiveMode, int32(len(p.Indices)), gl.UNSIGNED_INT, nil)
 		}
 	}
@@ -42,8 +40,8 @@ func (n *Node) getDataP() *float32 {
 	return &data[0]
 }
 
-func parseNodes(doc *gltf.Document, meshes []*Mesh) []*Node {
-	res := make([]*Node, len(doc.Nodes))
+func (o *Object) parseNodes(doc *gltf.Document) {
+	o.Nodes = make([]*Node, len(doc.Nodes))
 	parents := make([]uint32, len(doc.Nodes))
 	recursiveNodeParent(doc.Nodes, 0, parents)
 	for i, node := range doc.Nodes {
@@ -55,23 +53,23 @@ func parseNodes(doc *gltf.Document, meshes []*Mesh) []*Node {
 			matrix:      node.MatrixOrDefault(),
 			children:    make([]*Node, 0),
 		}
+		n.translation.Add(o.Pos)
 
 		if node.Mesh != nil {
-			n.mesh = meshes[*node.Mesh]
+			n.mesh = o.Meshes[*node.Mesh]
 		}
-		res[i] = n
+		o.Nodes[i] = n
 	}
-	for i, node := range res {
+	for i, node := range o.Nodes {
 		// parent
 		if parents[i] != uint32(i) {
-			node.parent = res[parents[i]]
+			node.parent = o.Nodes[parents[i]]
 		}
 		// children
 		for _, child := range doc.Nodes[i].Children {
-			node.children = append(node.children, res[child])
+			node.children = append(node.children, o.Nodes[child])
 		}
 	}
-	return res
 }
 
 func recursiveNodeParent(nodes []*gltf.Node, parentNode uint32, res []uint32) []uint32 {

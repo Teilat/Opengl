@@ -5,6 +5,12 @@ import (
 	"github.com/go-gl/gl/v4.6-core/gl"
 	"github.com/qmuntal/gltf"
 	"github.com/qmuntal/gltf/modeler"
+	"image"
+	"image/draw"
+	"image/jpeg"
+	"image/png"
+	"os"
+	"strings"
 	"unsafe"
 )
 
@@ -39,7 +45,7 @@ type TextureInfo struct {
 	TextureImageId uint32
 }
 
-func parsePrimitives(doc *gltf.Document, primitives []*gltf.Primitive, images []*Image, path, name string) []*Primitive {
+func (o *Object) parsePrimitives(doc *gltf.Document, primitives []*gltf.Primitive, path string) []*Primitive {
 	res := make([]*Primitive, len(primitives))
 	for i, primitive := range primitives {
 		mat := doc.Materials[*primitive.Material]
@@ -91,9 +97,8 @@ func parsePrimitives(doc *gltf.Document, primitives []*gltf.Primitive, images []
 
 		p.Vao = p.makeVAO()
 		if p.BaseColor != nil {
-			p.TextureId = bindTexture(path + "/" + images[p.BaseColor.TextureImageId].URI)
+			p.TextureId = bindTexture(path + "/" + o.Images[p.BaseColor.TextureImageId].URI)
 			// bindDepthTexture
-			fmt.Printf("binded %s for %s:\n", images[p.BaseColor.TextureImageId].URI, name)
 		}
 		res[i] = p
 	}
@@ -159,4 +164,56 @@ func normalize(vertices [][3]float32) [][3]float32 {
 		res[i][2] = vertice[2] / maximum
 	}
 	return res
+}
+
+func bindTexture(texturePath string) uint32 {
+	var texture uint32
+
+	img, err := getImageFromFilePath(texturePath)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	rgba := image.NewRGBA(img.Bounds())
+	draw.Draw(rgba, rgba.Bounds(), img, image.Pt(0, 0), draw.Src)
+
+	gl.GenTextures(1, &texture)
+	gl.ActiveTexture(gl.TEXTURE0)
+	gl.BindTexture(gl.TEXTURE_2D, texture)
+
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_R, gl.REPEAT)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+
+	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.SRGB_ALPHA, int32(rgba.Rect.Size().X), int32(rgba.Rect.Size().Y), 0, gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(rgba.Pix))
+	gl.GenerateMipmap(texture)
+	gl.BindTexture(gl.TEXTURE_2D, 0)
+	return texture
+}
+
+func getImageFromFilePath(file string) (image.Image, error) {
+	imgFile, err := os.Open(file)
+	var img image.Image
+	if err != nil {
+		return nil, err
+	}
+
+	ext := strings.Split(file, ".")
+	switch ext[len(ext)-1] {
+	case "png":
+		img, err = png.Decode(imgFile)
+		if err != nil {
+			return nil, err
+		}
+
+	case "jpeg", "jpg":
+		img, err = jpeg.Decode(imgFile)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	imgFile.Close()
+	return img, nil
 }

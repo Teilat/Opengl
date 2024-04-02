@@ -9,20 +9,20 @@ type Scene struct {
 	Nodes []*Node
 }
 
-func parseScenes(doc *gltf.Document, nodes []*Node) ([]*Scene, *Scene) {
-	res := make([]*Scene, 0)
-	for _, scene := range doc.Scenes {
+func (o *Object) parseScenes(doc *gltf.Document, nodes []*Node) {
+	o.Scene = make([]*Scene, len(doc.Scenes))
+	for i, scene := range doc.Scenes {
 		s := &Scene{
 			Name: scene.Name,
 		}
 		for _, node := range scene.Nodes {
 			s.Nodes = append(s.Nodes, nodes[node])
 		}
-		res = append(res, s)
+		o.Scene[i] = s
 	}
 	defaultScene := uint32(0)
 	if doc.Scene != nil {
 		defaultScene = *doc.Scene
 	}
-	return res, res[defaultScene]
+	o.MainScene = o.Scene[defaultScene]
 }

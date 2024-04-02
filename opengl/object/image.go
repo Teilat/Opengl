@@ -7,14 +7,13 @@ type Image struct {
 	URI  string
 }
 
-func parseImages(doc *gltf.Document) []*Image {
-	res := make([]*Image, len(doc.Images))
+func (o *Object) parseImages(doc *gltf.Document) {
+	o.Images = make([]*Image, len(doc.Images))
 	for i, image := range doc.Images {
 		img := &Image{
 			Name: image.Name,
 			URI:  image.URI,
 		}
-		res[i] = img
+		o.Images[i] = img
 	}
-	return res
 }
