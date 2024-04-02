@@ -1,0 +1,1 @@
+https://github.com/KhronosGroup/glTF-Sample-Assets/blob/8ae63f170dbb46778f63cb082e8f735c86a2c2ea/Models/Models-testing.md#gltf-20-sample-assets
