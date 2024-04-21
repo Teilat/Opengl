@@ -2,7 +2,9 @@ package object
 
 import (
 	"fmt"
+	"os"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/go-gl/mathgl/mgl32"
@@ -18,9 +20,35 @@ type Object struct {
 	Images    []*Image
 }
 
-func NewObject(pos mgl32.Vec3, path string) *Object {
+func NewObject(pos mgl32.Vec3, path string, binary bool) *Object {
 	t := time.Now()
-	doc, err := gltf.Open(path + "/scene.gltf")
+
+	folder, err := os.Open(path)
+	if err != nil {
+		return nil
+	}
+	files, err := folder.ReadDir(0)
+	if err != nil {
+		return nil
+	}
+	docFile := ""
+	for _, f := range files {
+		if binary {
+			if strings.HasSuffix(f.Name(), ".glb") {
+				docFile = f.Name()
+				break
+			}
+		} else if strings.HasSuffix(f.Name(), ".gltf") {
+			docFile = f.Name()
+			break
+		}
+	}
+
+	if docFile == "" {
+		return nil
+	}
+
+	doc, err := gltf.Open(strings.Join([]string{path, docFile}, "/"))
 	if err != nil {
 		fmt.Println(err)
 		return nil
@@ -32,11 +60,12 @@ func NewObject(pos mgl32.Vec3, path string) *Object {
 
 	obj := &Object{Pos: pos}
 	obj.parseImages(doc)
-	obj.parseMeshes(doc, path)
+	withErr := obj.parseMeshes(doc, path)
 	obj.parseNodes(doc)
 	obj.parseScenes(doc, obj.Nodes)
 
-	fmt.Printf("Done in %f milliseconds\n", time.Since(t).Seconds()*1000)
+	fmt.Printf("Done in %f milliseconds. ", time.Since(t).Seconds()*1000)
+	fmt.Printf("With errors: %t\n", withErr)
 	runtime.GC()
 	return obj
 }

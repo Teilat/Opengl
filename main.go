@@ -47,16 +47,9 @@ func main() {
 		{Text: fpsMeter.GetString(), PosX: 0, Scale: 0.5},
 	})
 	objectManager := object.NewManager()
-	//objectManager.AddObject(object.NewObject(mgl32.Vec3{3, 0, 3}, "./models/Torus Knot"))
-	//objectManager.AddObject(object.NewObject(mgl32.Vec3{3, 0, 0}, "./models/Cube"))
-	//objectManager.AddObject(object.NewObject(mgl32.Vec3{3, 0, 0}, "./models/Palm"))
-	objectManager.AddObject(object.NewObject(mgl32.Vec3{0, 0, 0}, "./models/Palm 2"))
-	//objectManager.AddObject(object.NewObject(mgl32.Vec3{0, 0, 3}, "./models/Open Cube"))
-	//objectManager.AddObject(object.NewObject(mgl32.Vec3{-3, 0, 3}, "./models/Sphere"))
-	//objectManager.AddObject(object.NewObject(mgl32.Vec3{3, 0, 0}, "./models/Girl"))
-	//objectManager.AddObject(object.NewObject(mgl32.Vec3{-3, 0, 0}, "./models/Datsun 240k"))
-	//objectManager.AddObject(object.NewObject(mgl32.Vec3{0, 0, -3}, "./models/Mazda mx-5"))
-	//objectManager.AddObject(object.NewObject(mgl32.Vec3{0, 0, -3}, "./models/Mazda rx-7 fc"))
+	//objectManager.AddObject(object.NewObject(mgl32.Vec3{3, 0, 3}, "./models/BoxVertexColors", true))
+	//objectManager.AddObject(object.NewObject(mgl32.Vec3{0, 0, 0}, "./models/Cube", true))
+	objectManager.AddObject(object.NewObject(mgl32.Vec3{-3, 0, -3}, "./models/Avocado", false))
 
 	fpsMeter.Start(ctx)
 	for !win.ShouldClose() {

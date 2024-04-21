@@ -2,9 +2,6 @@ package object
 
 import (
 	"fmt"
-	"github.com/go-gl/gl/v4.6-core/gl"
-	"github.com/qmuntal/gltf"
-	"github.com/qmuntal/gltf/modeler"
 	"image"
 	"image/draw"
 	"image/jpeg"
@@ -12,16 +9,20 @@ import (
 	"os"
 	"strings"
 	"unsafe"
+
+	"github.com/go-gl/gl/v4.6-core/gl"
+	"github.com/qmuntal/gltf"
+	"github.com/qmuntal/gltf/modeler"
 )
 
 var PrimitiveModes = []uint32{
-	gl.TRIANGLES,      // TRIANGLES
-	gl.POINTS,         // POINTS
-	gl.LINES,          // LINES
-	gl.LINE_LOOP,      // LINE_LOOP
-	gl.LINE_STRIP,     // LINE_STRIP
-	gl.TRIANGLE_STRIP, // TRIANGLE_STRIP
-	gl.TRIANGLE_FAN,   // TRIANGLE_FAN
+	gl.TRIANGLES,
+	gl.POINTS,
+	gl.LINES,
+	gl.LINE_LOOP,
+	gl.LINE_STRIP,
+	gl.TRIANGLE_STRIP,
+	gl.TRIANGLE_FAN,
 }
 
 type Primitive struct {
@@ -45,28 +46,30 @@ type TextureInfo struct {
 	TextureImageId uint32
 }
 
-func (o *Object) parsePrimitives(doc *gltf.Document, primitives []*gltf.Primitive, path string) []*Primitive {
+func (o *Object) parsePrimitives(doc *gltf.Document, primitives []*gltf.Primitive, path string) ([]*Primitive, bool) {
 	res := make([]*Primitive, len(primitives))
+	withErr := false
 	for i, primitive := range primitives {
-		mat := doc.Materials[*primitive.Material]
 		p := &Primitive{
 			PrimitiveMode: PrimitiveModes[primitive.Mode],
 		}
-
-		if mat.PBRMetallicRoughness.BaseColorTexture != nil {
-			p.BaseColor = &TextureInfo{}
-			p.BaseColor.TextureIndex = mat.PBRMetallicRoughness.BaseColorTexture.Index
-			tex := doc.Textures[p.BaseColor.TextureIndex]
-			if tex.Source != nil {
-				p.BaseColor.TextureImageId = *tex.Source
+		if primitive.Material != nil {
+			mat := doc.Materials[*primitive.Material]
+			if mat.PBRMetallicRoughness.BaseColorTexture != nil {
+				p.BaseColor = &TextureInfo{}
+				p.BaseColor.TextureIndex = mat.PBRMetallicRoughness.BaseColorTexture.Index
+				tex := doc.Textures[p.BaseColor.TextureIndex]
+				if tex.Source != nil {
+					p.BaseColor.TextureImageId = *tex.Source
+				}
 			}
-		}
-		if mat.PBRMetallicRoughness.MetallicRoughnessTexture != nil {
-			p.MetallicRoughness = &TextureInfo{}
-			p.MetallicRoughness.TextureIndex = mat.PBRMetallicRoughness.MetallicRoughnessTexture.Index
-			tex := doc.Textures[p.MetallicRoughness.TextureIndex]
-			if tex.Source != nil {
-				p.MetallicRoughness.TextureImageId = *tex.Source
+			if mat.PBRMetallicRoughness.MetallicRoughnessTexture != nil {
+				p.MetallicRoughness = &TextureInfo{}
+				p.MetallicRoughness.TextureIndex = mat.PBRMetallicRoughness.MetallicRoughnessTexture.Index
+				tex := doc.Textures[p.MetallicRoughness.TextureIndex]
+				if tex.Source != nil {
+					p.MetallicRoughness.TextureImageId = *tex.Source
+				}
 			}
 		}
 
@@ -97,12 +100,14 @@ func (o *Object) parsePrimitives(doc *gltf.Document, primitives []*gltf.Primitiv
 
 		p.Vao = p.makeVAO()
 		if p.BaseColor != nil {
-			p.TextureId = bindTexture(path + "/" + o.Images[p.BaseColor.TextureImageId].URI)
+			var err bool
+			p.TextureId, err = bindTexture(path + "/" + o.Images[p.BaseColor.TextureImageId].URI)
+			withErr = withErr || err
 			// bindDepthTexture
 		}
 		res[i] = p
 	}
-	return res
+	return res, withErr
 }
 
 func (p *Primitive) makeVAO() uint32 {
@@ -166,12 +171,15 @@ func normalize(vertices [][3]float32) [][3]float32 {
 	return res
 }
 
-func bindTexture(texturePath string) uint32 {
+func bindTexture(texturePath string) (uint32, bool) {
 	var texture uint32
 
 	img, err := getImageFromFilePath(texturePath)
-	if err != nil {
-		fmt.Println(err)
+	if img == nil {
+		if err != nil {
+			fmt.Println(err)
+		}
+		return 0, true
 	}
 
 	rgba := image.NewRGBA(img.Bounds())
@@ -189,7 +197,7 @@ func bindTexture(texturePath string) uint32 {
 	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.SRGB_ALPHA, int32(rgba.Rect.Size().X), int32(rgba.Rect.Size().Y), 0, gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(rgba.Pix))
 	gl.GenerateMipmap(texture)
 	gl.BindTexture(gl.TEXTURE_2D, 0)
-	return texture
+	return texture, false
 }
 
 func getImageFromFilePath(file string) (image.Image, error) {
