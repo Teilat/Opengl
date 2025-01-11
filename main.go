@@ -18,40 +18,49 @@ import (
 )
 
 var (
-	Width  = 1280
-	Height = 1024
+	Width  = 800
+	Height = 600
 
 	FpsLock = true
-	Fps     = 75
+	Fps     = 120
 )
 
 func main() {
 	runtime.LockOSThread()
 	ctx, cancel := context.WithCancel(context.Background())
 	fixedUpdateTicker := time.NewTicker(time.Second / time.Duration(Fps*2))
+	debugTicker := time.NewTicker(metric.TickerResolution)
 
 	win := window.InitGlfw(Width, Height, Fps, "Program", false, input.KeyCallback, input.CursorCallback, window.OnResize)
 	program := opengl.InitOpenGL(false)
 
-	cam := camera.NewCamera(ctx, fixedUpdateTicker, program, 80, mgl32.Vec3{3, 0, -3}, mgl32.Vec3{0, 0, 0}, win.GetWidth(), win.GetHeight())
+	cam := camera.NewCamera(ctx, fixedUpdateTicker, program, 80, mgl32.Vec3{0, 0, 0}, mgl32.Vec3{0, 0, 0}, win.GetWidth(), win.GetHeight())
 
 	gl.ClearColor(0.2, 0.3, 0.3, 1.0)
 
 	fpsMeter := metric.NewFPSMeter()
 	go metric.StartPprof()
 
+	cam.AddDebug(debugTicker)
+	cam.StartDebug()
+
+	if c := cam.GetDebug(); c != nil {
+		win.Text.AddText([]*text.Item{
+			{Text: c.GetPosString(), PosX: 0, Scale: 0.5},
+			{Text: c.GetLookAtString(), PosX: 0, Scale: 0.5},
+			{Text: c.GetFovString(), PosX: 0, Scale: 0.5},
+		})
+	}
+
 	win.Text.AddText([]*text.Item{
-		{Text: cam.GetDebug().GetPosString(), PosX: 0, Scale: 0.5},
-		{Text: cam.GetDebug().GetLookAtString(), PosX: 0, Scale: 0.5},
-		{Text: cam.GetDebug().GetFovString(), PosX: 0, Scale: 0.5},
 		{Text: fpsMeter.GetString(), PosX: 0, Scale: 0.5},
 	})
 	objectManager := object.NewManager()
 	//objectManager.AddObject(object.NewObject(mgl32.Vec3{3, 0, 3}, "./models/BoxVertexColors", true))
 	//objectManager.AddObject(object.NewObject(mgl32.Vec3{0, 0, 0}, "./models/Cube", true))
-	objectManager.AddObject(object.NewObject(mgl32.Vec3{-3, 0, -3}, "./models/Avocado", false))
+	objectManager.AddObject(object.NewObject(mgl32.Vec3{0, 0, 0}, "./models/Avocado", false))
 
-	fpsMeter.Start(ctx)
+	fpsMeter.Start(ctx, debugTicker)
 	for !win.ShouldClose() {
 		t := time.Now()
 		glfw.PollEvents()
@@ -67,7 +76,8 @@ func main() {
 		win.SwapBuffers()
 
 		gl.Finish()
-		fpsMeter.Tick()
+		fpsMeter.Tick(t)
+
 		if FpsLock {
 			time.Sleep(time.Second/time.Duration(Fps) - time.Since(t))
 		}

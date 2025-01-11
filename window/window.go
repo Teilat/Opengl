@@ -54,6 +54,7 @@ func InitGlfw(width, height, refreshRate int, title string, fullscreen bool,
 	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
 	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
 	glfw.WindowHint(glfw.RefreshRate, refreshRate)
+	glfw.WindowHint(glfw.DoubleBuffer, glfw.False)
 
 	monitor = glfw.GetMonitors()[0]
 	if monitor == nil {
@@ -71,7 +72,7 @@ func InitGlfw(width, height, refreshRate int, title string, fullscreen bool,
 	}
 
 	window.MakeContextCurrent()
-	window.SetInputMode(glfw.CursorMode, glfw.CursorDisabled)
+	window.SetInputMode(glfw.CursorMode, glfw.CursorHidden)
 	if glfw.RawMouseMotionSupported() {
 		window.SetInputMode(glfw.RawMouseMotion, glfw.True)
 	}
@@ -84,7 +85,7 @@ func InitGlfw(width, height, refreshRate int, title string, fullscreen bool,
 
 	return &Window{
 		Window:         window,
-		Text:           text.Init(32, width, height, "arial.ttf"),
+		Text:           text.Init(32, width, height),
 		monitor:        monitor,
 		title:          title,
 		fullScreenLock: time.Now(),

@@ -57,18 +57,18 @@ func (o *Object) parsePrimitives(doc *gltf.Document, primitives []*gltf.Primitiv
 			mat := doc.Materials[*primitive.Material]
 			if mat.PBRMetallicRoughness.BaseColorTexture != nil {
 				p.BaseColor = &TextureInfo{}
-				p.BaseColor.TextureIndex = mat.PBRMetallicRoughness.BaseColorTexture.Index
+				p.BaseColor.TextureIndex = uint32(mat.PBRMetallicRoughness.BaseColorTexture.Index)
 				tex := doc.Textures[p.BaseColor.TextureIndex]
 				if tex.Source != nil {
-					p.BaseColor.TextureImageId = *tex.Source
+					p.BaseColor.TextureImageId = uint32(*tex.Source)
 				}
 			}
 			if mat.PBRMetallicRoughness.MetallicRoughnessTexture != nil {
 				p.MetallicRoughness = &TextureInfo{}
-				p.MetallicRoughness.TextureIndex = mat.PBRMetallicRoughness.MetallicRoughnessTexture.Index
+				p.MetallicRoughness.TextureIndex = uint32(mat.PBRMetallicRoughness.MetallicRoughnessTexture.Index)
 				tex := doc.Textures[p.MetallicRoughness.TextureIndex]
 				if tex.Source != nil {
-					p.MetallicRoughness.TextureImageId = *tex.Source
+					p.MetallicRoughness.TextureImageId = uint32(*tex.Source)
 				}
 			}
 		}

@@ -42,15 +42,14 @@ func (n *Node) getDataP() *float32 {
 
 func (o *Object) parseNodes(doc *gltf.Document) {
 	o.Nodes = make([]*Node, len(doc.Nodes))
-	parents := make([]uint32, len(doc.Nodes))
-	recursiveNodeParent(doc.Nodes, 0, parents)
+	parents := recursiveNodeParent(doc.Nodes, 0, nil)
 	for i, node := range doc.Nodes {
 		n := &Node{
 			Name:        node.Name,
-			translation: node.TranslationOrDefault(),
-			scale:       node.ScaleOrDefault(),
-			rotation:    node.RotationOrDefault(),
-			matrix:      node.MatrixOrDefault(),
+			translation: toVec3f32(node.TranslationOrDefault()),
+			scale:       toVec3f32(node.ScaleOrDefault()),
+			rotation:    toVec4f32(node.RotationOrDefault()),
+			matrix:      toMat4f32(node.MatrixOrDefault()),
 			children:    make([]*Node, 0),
 		}
 		n.translation.Add(o.Pos)
@@ -62,7 +61,7 @@ func (o *Object) parseNodes(doc *gltf.Document) {
 	}
 	for i, node := range o.Nodes {
 		// parent
-		if parents[i] != uint32(i) {
+		if parents[i] != i {
 			node.parent = o.Nodes[parents[i]]
 		}
 		// children
@@ -72,10 +71,10 @@ func (o *Object) parseNodes(doc *gltf.Document) {
 	}
 }
 
-func recursiveNodeParent(nodes []*gltf.Node, parentNode uint32, res []uint32) []uint32 {
+func recursiveNodeParent(nodes []*gltf.Node, parentNode int, res []int) []int {
 	// key - child, val - parent
 	if res == nil {
-		res = make([]uint32, len(nodes))
+		res = make([]int, len(nodes))
 	}
 	if len(nodes[parentNode].Children) > 0 {
 		for _, child := range nodes[parentNode].Children {

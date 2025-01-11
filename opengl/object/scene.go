@@ -20,7 +20,7 @@ func (o *Object) parseScenes(doc *gltf.Document, nodes []*Node) {
 		}
 		o.Scene[i] = s
 	}
-	defaultScene := uint32(0)
+	defaultScene := 0
 	if doc.Scene != nil {
 		defaultScene = *doc.Scene
 	}

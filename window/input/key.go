@@ -183,9 +183,9 @@ func GetDefaultAxis(axis Axis) float64 {
 		return boolToFloat(GetKey(glfw.KeyS) || GetKey(glfw.KeyDown))*-1 +
 			boolToFloat(GetKey(glfw.KeyW) || GetKey(glfw.KeyUp))*1
 	case MouseX:
-		return posXx
+		return posX
 	case MouseY:
-		return posYy
+		return posY
 	default:
 		return 0
 	}

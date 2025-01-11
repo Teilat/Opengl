@@ -21,9 +21,11 @@ type Item struct {
 	Scale float32
 }
 
-func Init(scale int32, windowWidth, windowHeight int, fontName string) *Text {
+func Init(scale int32, windowWidth, windowHeight int) *Text {
+	fontName := getDefaultFont()
+
 	// нужно для инициализации шейдерной программы этой либы
-	// пакет должен совподать с пакетом внутири либы:github.com/go-gl/gl/all-core/gl
+	// пакет должен совпадать с пакетом внутри либы: github.com/go-gl/gl/all-core/gl
 	if err := gl.Init(); err != nil {
 		log.Printf("LoadFont: %v", err)
 	}
@@ -50,8 +52,11 @@ func (t *Text) AddText(strings []*Item) {
 		t.activeText = make([]*Item, 0)
 	}
 	for i, item := range strings {
+		if item.Text == nil {
+			continue
+		}
 		if item.PosY == 0 {
-			item.PosY = float32(t.scale*int32(i+1)) * item.Scale
+			item.PosY = float32(t.scale*int32(i+len(t.activeText)+1)) * item.Scale
 		}
 	}
 	t.activeText = append(t.activeText, strings...)
@@ -59,6 +64,9 @@ func (t *Text) AddText(strings []*Item) {
 }
 
 func (t *Text) DrawText() {
+	if t.Font == nil {
+		return
+	}
 	for _, item := range t.activeText {
 		if item.Text == nil {
 			continue

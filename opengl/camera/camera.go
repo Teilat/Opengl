@@ -16,10 +16,12 @@ const (
 	cameraData = "cameraData\x00"
 	projection = "projection\x00"
 
-	movementMulti = 0.2
+	movementMulti = 0.05
 )
 
 type Camera struct {
+	ctx context.Context
+
 	program uint32
 
 	ShaderCameraData         int32
@@ -35,11 +37,13 @@ type Camera struct {
 	windowWidth  float32
 	windowHeight float32
 
-	debug *Debug
+	debug Debug
 }
 
 func NewCamera(ctx context.Context, ticker *time.Ticker, program uint32, fov float32, pos, lookAt mgl32.Vec3, width, height int) *Camera {
 	c := &Camera{
+		ctx: ctx,
+
 		program: program,
 
 		ShaderCameraData:         gl.GetUniformLocation(program, gl.Str(cameraData)),
@@ -56,27 +60,26 @@ func NewCamera(ctx context.Context, ticker *time.Ticker, program uint32, fov flo
 		windowWidth:  float32(width),
 	}
 
-	if true {
-		dCamPos := ""
-		dLookAt := ""
-		dFov := ""
-		d := &Debug{
-			lockAt: &dLookAt,
-			fov:    &dFov,
-			pos:    &dCamPos,
-		}
-		c.debug = d
-		go d.run(ctx, c)
-	}
-
 	gl.UseProgram(c.program)
 	gl.UniformMatrix3fv(c.ShaderCameraData, 1, false, c.GetDataP())
 	gl.UniformMatrix4fv(c.ShaderProjectionLocation, 1, false, c.getPerspectiveMatrix4fv())
-	go c.fixedUpdate(ctx, ticker)
+	go c.fixedUpdate(ticker)
 	return c
 }
 
 // global methods
+
+func (c *Camera) AddDebug(ticker *time.Ticker) {
+	c.debug = NewCameraDebug(c, ticker)
+}
+
+func (c *Camera) StartDebug() {
+	c.debug.Start(c.ctx)
+}
+
+func (c *Camera) StopDebug() {
+	c.debug.Stop()
+}
 
 func (c *Camera) Update() {
 	gl.UseProgram(c.program)
@@ -113,7 +116,7 @@ func (c *Camera) GetFov() float32 {
 	return c.fov
 }
 
-func (c *Camera) GetDebug() *Debug {
+func (c *Camera) GetDebug() Debug {
 	return c.debug
 }
 
@@ -129,14 +132,14 @@ func (c *Camera) SetPos(pos mgl32.Vec3) {
 
 // local methods
 
-func (c *Camera) fixedUpdate(ctx context.Context, ticker *time.Ticker) {
+func (c *Camera) fixedUpdate(ticker *time.Ticker) {
 	for {
 		select {
 		case <-ticker.C:
 			c.calcLookAt()
 			c.calcMovement()
 			c.updFov()
-		case <-ctx.Done():
+		case <-c.ctx.Done():
 			return
 		}
 	}
