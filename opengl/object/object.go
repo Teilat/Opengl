@@ -2,17 +2,13 @@ package object
 
 import (
 	"fmt"
-	"os"
-	"runtime"
-	"strings"
-	"time"
-
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/qmuntal/gltf"
 )
 
 type Object struct {
 	Pos       mgl32.Vec3
+	Scale     float32
 	MainScene *Scene
 	Scene     []*Scene
 	Nodes     []*Node
@@ -20,54 +16,12 @@ type Object struct {
 	Images    []*Image
 }
 
-func NewObject(pos mgl32.Vec3, path string, binary bool) *Object {
-	t := time.Now()
-
-	folder, err := os.Open(path)
-	if err != nil {
-		return nil
-	}
-	files, err := folder.ReadDir(0)
-	if err != nil {
-		return nil
-	}
-	docFile := ""
-	for _, f := range files {
-		if binary {
-			if strings.HasSuffix(f.Name(), ".glb") {
-				docFile = f.Name()
-				break
-			}
-		} else if strings.HasSuffix(f.Name(), ".gltf") {
-			docFile = f.Name()
-			break
-		}
-	}
-
-	if docFile == "" {
-		return nil
-	}
-
-	doc, err := gltf.Open(strings.Join([]string{path, docFile}, "/"))
-	if err != nil {
-		fmt.Println(err)
-		return nil
-	}
-	fmt.Printf("parsing model:%s\n", path)
-	fmt.Println("\ttotal mesh:", len(doc.Meshes))
-	fmt.Println("\ttotal textures:", len(doc.Textures))
-	fmt.Println("\ttotal images:", len(doc.Images))
-
-	obj := &Object{Pos: pos}
-	obj.parseImages(doc)
-	withErr := obj.parseMeshes(doc, path)
-	obj.parseNodes(doc)
-	obj.parseScenes(doc, obj.Nodes)
-
-	fmt.Printf("Done in %f milliseconds. ", time.Since(t).Seconds()*1000)
-	fmt.Printf("With errors: %t\n", withErr)
-	runtime.GC()
-	return obj
+func (o *Object) Parse(doc *gltf.Document, path string) bool {
+	o.parseImages(doc)
+	withErr := o.parseMeshes(doc, path)
+	o.parseNodes(doc)
+	o.parseScenes(doc, o.Nodes)
+	return withErr
 }
 
 func (o *Object) GetPos() mgl32.Vec3 {
@@ -79,6 +33,10 @@ func (o *Object) Move(pos mgl32.Vec3) {
 }
 
 func (o *Object) Draw(program uint32) {
+	if o == nil {
+		fmt.Println("Object is nil")
+		return
+	}
 	o.recursiveDraw(program, o.MainScene.Nodes)
 }
 

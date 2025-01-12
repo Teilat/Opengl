@@ -3,18 +3,21 @@ package main
 import (
 	"C"
 	"context"
+	"fmt"
+	"runtime"
+	"time"
+
 	"github.com/go-gl/gl/v4.6-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
+
 	"opengl/metric"
 	"opengl/opengl"
 	"opengl/opengl/camera"
-	"opengl/opengl/object"
+	"opengl/opengl/objectManager"
 	"opengl/window"
 	"opengl/window/input"
 	"opengl/window/text"
-	"runtime"
-	"time"
 )
 
 var (
@@ -34,7 +37,7 @@ func main() {
 	win := window.InitGlfw(Width, Height, Fps, "Program", false, input.KeyCallback, input.CursorCallback, window.OnResize)
 	program := opengl.InitOpenGL(false)
 
-	cam := camera.NewCamera(ctx, fixedUpdateTicker, program, 80, mgl32.Vec3{0, 0, 0}, mgl32.Vec3{0, 0, 0}, win.GetWidth(), win.GetHeight())
+	cam := camera.NewCamera(ctx, fixedUpdateTicker, program, 80, mgl32.Vec3{-0.1, 0.1, -0.1}, mgl32.Vec3{0, 0, 0}, win.GetWidth(), win.GetHeight())
 
 	gl.ClearColor(0.2, 0.3, 0.3, 1.0)
 
@@ -55,10 +58,20 @@ func main() {
 	win.Text.AddText([]*text.Item{
 		{Text: fpsMeter.GetString(), PosX: 0, Scale: 0.5},
 	})
-	objectManager := object.NewManager()
-	//objectManager.AddObject(object.NewObject(mgl32.Vec3{3, 0, 3}, "./models/BoxVertexColors", true))
-	//objectManager.AddObject(object.NewObject(mgl32.Vec3{0, 0, 0}, "./models/Cube", true))
-	objectManager.AddObject(object.NewObject(mgl32.Vec3{0, 0, 0}, "./models/Avocado", false))
+
+	manager := objectManager.NewManager("./models")
+	if err := manager.Init(); err != nil {
+		fmt.Println(err)
+	}
+	if err := manager.NewObject(mgl32.Vec3{3, 0, 3}, 1, "BoxVertexColors"); err != nil {
+		fmt.Println(err)
+	}
+	//if err := manager.NewObject(mgl32.Vec3{-3, 0, -3}, "Cube"); err != nil {
+	//	fmt.Println(err)
+	//}
+	if err := manager.NewObject(mgl32.Vec3{0, 0, 0}, 3, "Avocado"); err != nil {
+		fmt.Println(err)
+	}
 
 	fpsMeter.Start(ctx, debugTicker)
 	for !win.ShouldClose() {
@@ -69,7 +82,7 @@ func main() {
 
 		cam.Update()
 
-		for _, obj := range objectManager.Objects {
+		for _, obj := range manager.Objects {
 			obj.Draw(program)
 		}
 		win.Text.DrawText()

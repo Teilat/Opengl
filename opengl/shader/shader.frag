@@ -6,6 +6,7 @@ in float colorMult; // коофицент отдаления от камеры
 uniform sampler2D tex;
 
 out vec4 color;
+
 void main() {
     color = texture2D(tex,texturePos);
     if (color.w < 1) discard; // if alpha < 1 skip

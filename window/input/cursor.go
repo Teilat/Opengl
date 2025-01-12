@@ -1,7 +1,6 @@
 package input
 
 import (
-	"fmt"
 	"github.com/go-gl/glfw/v3.3/glfw"
 )
 
@@ -13,18 +12,11 @@ var (
 )
 
 func CursorCallback(w *glfw.Window, x, y float64) {
-	if w.GetAttrib(glfw.Focused) == 0 {
-		return
-	}
-
 	prevPosX = posX
 	prevPosY = posY
 
 	posX += x - prevPosX
-	posY += y - prevPosY
-	fmt.Println(posX, prevPosX, x)
-	fmt.Println(posY, prevPosY, y)
-
+	posY -= y + prevPosY
 }
 
 func SetCursorPos(x, y float64) {

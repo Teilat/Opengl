@@ -36,7 +36,11 @@ func (n *Node) Draw(program uint32) {
 }
 
 func (n *Node) getDataP() *float32 {
-	data := mgl32.Mat4x3FromCols(mgl32.Vec4{n.translation[0], n.translation[1], n.translation[2], 0}, n.rotation, mgl32.Vec4{n.scale[0], n.scale[1], n.scale[2], 0})
+	data := mgl32.Mat4x3FromCols(
+		mgl32.Vec4{n.translation[0], n.translation[1], n.translation[2], 0},
+		n.rotation,
+		mgl32.Vec4{n.scale[0], n.scale[1], n.scale[2], 0},
+	)
 	return &data[0]
 }
 
@@ -52,7 +56,8 @@ func (o *Object) parseNodes(doc *gltf.Document) {
 			matrix:      toMat4f32(node.MatrixOrDefault()),
 			children:    make([]*Node, 0),
 		}
-		n.translation.Add(o.Pos)
+		n.translation = n.translation.Add(o.Pos)
+		n.scale = n.scale.Mul(o.Scale)
 
 		if node.Mesh != nil {
 			n.mesh = o.Meshes[*node.Mesh]
