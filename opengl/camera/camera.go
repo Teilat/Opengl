@@ -157,7 +157,7 @@ func (c *Camera) getCameraMatrix4fv() *float32 {
 }
 
 func (c *Camera) getPerspectiveMatrix4fv() *float32 {
-	val := mgl32.Perspective(mgl32.DegToRad(c.fov), c.windowWidth/c.windowHeight, 0, 100.0)
+	val := mgl32.Perspective(mgl32.DegToRad(c.fov), c.windowWidth/c.windowHeight, 0.01, 100.0)
 	return &val[0]
 }
 

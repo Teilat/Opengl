@@ -111,15 +111,3 @@ func (m *Manager) NewObject(pos mgl32.Vec3, scale float32, name string) error {
 func (m *Manager) AddObject(object *object.Object) {
 	m.Objects = append(m.Objects, object)
 }
-
-func (m *Manager) AddPlain() {
-	plain := &object.Object{
-		Pos:       mgl32.Vec3{0, 0, 0},
-		Scale:     1,
-		MainScene: nil,
-		Scene:     nil,
-		Nodes:     nil,
-		Meshes:    nil,
-	}
-	m.Objects = append(m.Objects, plain)
-}

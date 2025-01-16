@@ -2,6 +2,7 @@
 
 layout(location = 0) in vec3 vertexPosition;
 layout(location = 1) in vec2 texturePosition;
+layout(location = 2) in vec3 normalPosition;
 
 // uniform mat3 cameraData;
 // uniform mat4x3 modelData;
@@ -12,6 +13,7 @@ uniform mat4 cameraMatrix;
 
 out vec2 texturePos;
 out float colorMult;
+out vec3 FragPos;
 
 mat4 calcCamMatrix(mat3 data){
 	vec3 p = vec3(data[0][0],data[0][1],data[0][2]); //camera pos
@@ -41,4 +43,5 @@ void main() {
 	gl_Position = projectionMatrix * cameraMatrix * modelMatrix * vec4(vertexPosition, 1);
 	texturePos = texturePosition;
 	colorMult = distance(vec3(cameraMatrix), vec3(gl_Position));
+	FragPos = vec3(modelMatrix * vec4(vertexPosition, 1.0));
 }

@@ -73,7 +73,10 @@ func (o *Object) parsePrimitives(doc *gltf.Document, primitives []*gltf.Primitiv
 			}
 		}
 
-		indices1, _ := modeler.ReadIndices(doc, doc.Accessors[*primitive.Indices], []uint32{})
+		indices1, err := modeler.ReadIndices(doc, doc.Accessors[*primitive.Indices], []uint32{})
+		if err != nil {
+			fmt.Println(err)
+		}
 		p.Indices = indices1
 		for attribute, index := range primitive.Attributes {
 			switch attribute {
@@ -112,7 +115,6 @@ func (o *Object) parsePrimitives(doc *gltf.Document, primitives []*gltf.Primitiv
 
 func (p *Primitive) makeVAO() uint32 {
 	var vertexArrayObject, vertexBufferObject, indexBufferObject uint32
-	stride := 5 * int32(unsafe.Sizeof(float32(0)))
 	if p.Texture == nil {
 		p.Texture = make([][2]float32, len(p.Vertices))
 	}
@@ -120,9 +122,12 @@ func (p *Primitive) makeVAO() uint32 {
 		p.Vertices = normalize(p.Vertices)
 	}
 
+	stride := int32((len(p.Vertices[0]) + len(p.Texture[0]) + len(p.Normal[0])) * int(unsafe.Sizeof(float32(0)))) // size of params in append below
 	vert := make([]float32, 0)
 	for i, vertex := range p.Vertices {
-		vert = append(vert, vertex[0], vertex[1], vertex[2], p.Texture[i][0], p.Texture[i][1])
+		vert = append(vert, vertex[:]...)
+		vert = append(vert, p.Texture[i][:]...)
+		vert = append(vert, p.Normal[i][:]...)
 	}
 
 	gl.GenVertexArrays(1, &vertexArrayObject)
@@ -133,14 +138,17 @@ func (p *Primitive) makeVAO() uint32 {
 
 	// привязываем буфер к массиву вертексов
 	gl.BindBuffer(gl.ARRAY_BUFFER, vertexBufferObject)
-	// сохраняем дангые в созданый буффер с определенным размером в битах
-	gl.BufferData(gl.ARRAY_BUFFER, len(vert)*int(unsafe.Sizeof(float32(0))), gl.Ptr(vert), gl.STATIC_DRAW)
+	// сохраняем данные в созданный буфер с определенным размером в битах
+	gl.BufferData(gl.ARRAY_BUFFER, len(vert)*int(unsafe.Sizeof(float32(0))), gl.Ptr(&vert[0]), gl.STATIC_DRAW)
 	// создаем указатель для использования данных в шейдере
-	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, stride, nil)
+	gl.VertexAttribPointer(0, 3, gl.FLOAT, true, stride, nil)
 	gl.EnableVertexAttribArray(0)
-	// создаем указатель, но уже с офсетом в битах
+	// создаем указатель, но уже с офсетом в битах для текстуры
 	gl.VertexAttribPointerWithOffset(1, 2, gl.FLOAT, false, stride, uintptr(3*int(unsafe.Sizeof(float32(0)))))
 	gl.EnableVertexAttribArray(1)
+	// для нормали
+	gl.VertexAttribPointerWithOffset(2, 3, gl.FLOAT, false, stride, uintptr(5*int(unsafe.Sizeof(float32(0)))))
+	gl.EnableVertexAttribArray(2)
 
 	// создаем буфер индексов к массиву вертексов
 	// тк это именно буфер индексов, делать указатель для шейдера ему не нужно
